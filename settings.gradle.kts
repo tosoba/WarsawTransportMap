@@ -32,3 +32,5 @@ dependencyResolutionManagement {
 include(":androidApp")
 
 include(":composeApp")
+
+include(":core:network")
