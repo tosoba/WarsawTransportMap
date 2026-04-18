@@ -12,6 +12,7 @@ kotlin {
     namespace = "com.trm.warsawtransportmap"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     minSdk = libs.versions.android.minSdk.get().toInt()
+    androidResources { enable = true }
   }
 
   listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
