@@ -29,6 +29,10 @@ kotlin {
     }
 
     commonMain.dependencies {
+      implementation(project(":core:data"))
+      implementation(project(":core:network"))
+      implementation(project(":feature:map"))
+
       implementation(libs.compose.runtime)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
@@ -37,6 +41,8 @@ kotlin {
       implementation(libs.compose.uiToolingPreview)
       implementation(libs.androidx.lifecycle.viewmodelCompose)
       implementation(libs.androidx.lifecycle.runtimeCompose)
+      implementation(libs.koin.core)
+      implementation(libs.koin.compose)
     }
 
     commonTest.dependencies { implementation(libs.kotlin.test) }

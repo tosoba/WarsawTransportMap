@@ -34,3 +34,9 @@ include(":androidApp")
 include(":composeApp")
 
 include(":core:network")
+
+include(":core:model")
+
+include(":core:data")
+
+include(":feature:map")
