@@ -17,6 +17,7 @@ kotlin {
     commonMain.dependencies {
       implementation(project(":core:network"))
       implementation(project(":core:model"))
+      implementation(project(":core:common"))
       implementation(libs.koin.core)
       implementation(libs.kotlinx.serialization.json)
       implementation(libs.ktor.client.core)
@@ -24,6 +25,6 @@ kotlin {
       implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
       implementation(libs.androidx.lifecycle.runtime)
     }
-    androidMain.dependencies { implementation("androidx.lifecycle:lifecycle-process:2.8.7") }
+    androidMain.dependencies { }
   }
 }

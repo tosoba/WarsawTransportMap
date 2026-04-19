@@ -33,10 +33,12 @@ include(":androidApp")
 
 include(":composeApp")
 
+include(":core:common")
+
+include(":core:data")
+
 include(":core:network")
 
 include(":core:model")
-
-include(":core:data")
 
 include(":feature:map")

@@ -5,7 +5,7 @@ import com.trm.warsawtransportmap.core.network.client.umApiHttpClient
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
-val networkModule = module {
+val coreNetworkModule = module {
   single { Json { ignoreUnknownKeys = true } }
   single { umApiHttpClient(get()) }
   single { UmApiClient(get()) }

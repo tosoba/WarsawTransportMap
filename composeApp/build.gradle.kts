@@ -29,6 +29,7 @@ kotlin {
     }
 
     commonMain.dependencies {
+      implementation(project(":core:common"))
       implementation(project(":core:data"))
       implementation(project(":core:network"))
       implementation(project(":feature:map"))
