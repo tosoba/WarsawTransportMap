@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.warsawtransportmap.core.data.TransportRepository
 import com.trm.warsawtransportmap.core.model.Vehicle
+import kotlin.time.Clock
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -16,12 +17,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 
 class MapViewModel(
   private val repository: TransportRepository,
   private val lifecycle: Lifecycle,
-  private val savedStateHandle: SavedStateHandle
+  private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
   private val _vehicles = MutableStateFlow<List<Vehicle>>(emptyList())
   val vehicles: StateFlow<List<Vehicle>> = _vehicles.asStateFlow()
@@ -50,9 +50,6 @@ class MapViewModel(
 
   private fun handleForeground() {
     val now = Clock.System.now().toEpochMilliseconds()
-
-    // If app was in background for longer than 30 seconds (or never fetched), execute request
-    // immediately
     if (lastRequestTimeEpoch == 0L || (now - lastRequestTimeEpoch) >= 30_000L) {
       fetchVehicles()
     }

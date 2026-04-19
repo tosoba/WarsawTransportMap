@@ -24,8 +24,10 @@ kotlin {
       implementation(libs.koin.core)
       implementation(libs.koin.compose)
       implementation(libs.koin.compose.viewmodel)
+      implementation(libs.maplibre.compose)
       implementation(libs.kotlinx.datetime)
       implementation(libs.androidx.lifecycle.runtime)
+      implementation(libs.androidx.lifecycle.runtimeCompose)
 
       implementation(libs.compose.ui)
       implementation(libs.compose.foundation)

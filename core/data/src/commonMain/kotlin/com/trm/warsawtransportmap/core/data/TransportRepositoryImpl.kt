@@ -7,7 +7,7 @@ import com.trm.warsawtransportmap.core.network.dto.BusTramItem
 class TransportRepositoryImpl(private val apiClient: UmApiClient) : TransportRepository {
 
   override suspend fun getVehicles(): List<Vehicle> {
-    val response = apiClient.getBusesAndTrams(RESOURCE_ID, type = null)
+    val response = apiClient.getBusesAndTrams(RESOURCE_ID, type = 1)
     return response.result.map { it.toDomain() }
   }
 
