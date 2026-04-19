@@ -11,12 +11,8 @@ kotlin {
     minSdk = libs.versions.android.minSdk.get().toInt()
   }
 
-  listOf(iosArm64(), iosSimulatorArm64()).forEach {
-    it.binaries.framework {
-      baseName = "network"
-      isStatic = true
-    }
-  }
+  iosArm64()
+  iosSimulatorArm64()
 
   sourceSets {
     commonMain.dependencies {
