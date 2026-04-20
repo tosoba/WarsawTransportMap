@@ -24,8 +24,9 @@ kotlin {
 
   sourceSets {
     androidMain.dependencies {
-      implementation(libs.compose.uiToolingPreview)
       implementation(libs.androidx.activity.compose)
+
+      implementation(libs.compose.uiToolingPreview)
     }
 
     commonMain.dependencies {
@@ -34,14 +35,16 @@ kotlin {
       implementation(project(":core:network"))
       implementation(project(":feature:map"))
 
-      implementation(libs.compose.runtime)
+      implementation(libs.androidx.lifecycle.runtimeCompose)
+      implementation(libs.androidx.lifecycle.viewmodelCompose)
+
+      implementation(libs.compose.components.resources)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
+      implementation(libs.compose.runtime)
       implementation(libs.compose.ui)
-      implementation(libs.compose.components.resources)
       implementation(libs.compose.uiToolingPreview)
-      implementation(libs.androidx.lifecycle.viewmodelCompose)
-      implementation(libs.androidx.lifecycle.runtimeCompose)
+
       implementation(libs.koin.core)
       implementation(libs.koin.compose)
     }

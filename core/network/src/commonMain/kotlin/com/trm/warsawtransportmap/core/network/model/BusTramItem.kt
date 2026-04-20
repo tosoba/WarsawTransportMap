@@ -1,9 +1,7 @@
-package com.trm.warsawtransportmap.core.network.dto
+package com.trm.warsawtransportmap.core.network.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
-@Serializable data class BusesAndTramsResponse(val result: List<BusTramItem>)
 
 @Serializable
 data class BusTramItem(

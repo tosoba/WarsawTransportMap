@@ -17,22 +17,26 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
+      implementation(project(":core:common"))
       implementation(project(":core:data"))
       implementation(project(":core:model"))
-      implementation(project(":core:common"))
-      implementation(libs.androidx.lifecycle.viewmodelCompose)
-      implementation(libs.koin.core)
-      implementation(libs.koin.compose)
-      implementation(libs.koin.compose.viewmodel)
-      implementation(libs.maplibre.compose)
-      implementation(libs.kotlinx.datetime)
+
       implementation(libs.androidx.lifecycle.runtime)
       implementation(libs.androidx.lifecycle.runtimeCompose)
+      implementation(libs.androidx.lifecycle.viewmodelCompose)
 
       implementation(libs.compose.ui)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
       implementation(libs.compose.runtime)
+
+      implementation(libs.koin.core)
+      implementation(libs.koin.compose)
+      implementation(libs.koin.compose.viewmodel)
+
+      implementation(libs.maplibre.compose)
+
+      implementation(libs.kotlinx.datetime)
     }
   }
 }

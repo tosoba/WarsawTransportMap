@@ -1,7 +1,7 @@
 package com.trm.warsawtransportmap.core.network.client
 
 import com.trm.warsawtransportmap.core.network.UM_API_KEY
-import com.trm.warsawtransportmap.core.network.dto.BusesAndTramsResponse
+import com.trm.warsawtransportmap.core.network.model.BusesAndTramsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -10,8 +10,8 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 class UmApiClient(private val httpClient: HttpClient) {
-  suspend fun getBusesAndTrams(resourceId: String, type: Int? = null): BusesAndTramsResponse {
-    return httpClient
+  suspend fun getBusesAndTrams(resourceId: String, type: Int? = null): BusesAndTramsResponse =
+    httpClient
       .post("https://api.um.warszawa.pl/api/action/busestrams_get/") {
         url {
           parameters.append("resource_id", resourceId)
@@ -20,9 +20,8 @@ class UmApiClient(private val httpClient: HttpClient) {
         }
       }
       .body()
-  }
 }
 
-fun umApiHttpClient(json: Json): HttpClient {
-  return HttpClient { install(ContentNegotiation) { json(json) } }
+fun umApiHttpClient(json: Json): HttpClient = HttpClient {
+  install(ContentNegotiation) { json(json) }
 }

@@ -15,16 +15,19 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      implementation(project(":core:network"))
-      implementation(project(":core:model"))
       implementation(project(":core:common"))
-      implementation(libs.koin.core)
-      implementation(libs.kotlinx.serialization.json)
-      implementation(libs.ktor.client.core)
-      implementation(libs.kotlinx.coroutines.core)
-      implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+      implementation(project(":core:model"))
+      implementation(project(":core:network"))
+
       implementation(libs.androidx.lifecycle.runtime)
+
+      implementation(libs.koin.core)
+
+      implementation(libs.ktor.client.core)
+
+      implementation(libs.kotlinx.coroutines.core)
+      implementation(libs.kotlinx.datetime)
+      implementation(libs.kotlinx.serialization.json)
     }
-    androidMain.dependencies { }
   }
 }

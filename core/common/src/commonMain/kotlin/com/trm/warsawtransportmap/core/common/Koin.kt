@@ -8,6 +8,4 @@ val AppLifecycle = named("AppLifecycle")
 
 expect fun platformCommonModule(): Module
 
-val coreCommonModule = module {
-    includes(platformCommonModule())
-}
+val coreCommonModule = module { includes(platformCommonModule()) }

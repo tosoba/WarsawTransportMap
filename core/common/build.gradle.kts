@@ -14,12 +14,11 @@ kotlin {
   iosSimulatorArm64()
 
   sourceSets {
+    androidMain.dependencies { implementation(libs.androidx.lifecycle.process) }
+
     commonMain.dependencies {
-      implementation(libs.koin.core)
       implementation(libs.androidx.lifecycle.runtime)
-    }
-    androidMain.dependencies {
-      implementation(libs.androidx.lifecycle.process)
+      implementation(libs.koin.core)
     }
   }
 }

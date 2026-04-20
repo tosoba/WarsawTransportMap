@@ -5,5 +5,5 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val coreDataModule = module {
-  factoryOf(::TransportRepositoryImpl).bind(TransportRepository::class)
+  factoryOf(::TransportNetworkRepository).bind(TransportRepository::class)
 }

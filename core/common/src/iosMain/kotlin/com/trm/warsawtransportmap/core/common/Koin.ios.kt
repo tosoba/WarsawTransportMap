@@ -7,9 +7,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 private class AppLifecycleOwner : LifecycleOwner {
-    override val lifecycle: Lifecycle = LifecycleRegistry(this)
+  override val lifecycle: Lifecycle = LifecycleRegistry(this)
 }
 
 actual fun platformCommonModule(): Module = module {
-    single(AppLifecycle) { AppLifecycleOwner().lifecycle }
+  single(AppLifecycle) { AppLifecycleOwner().lifecycle }
 }
