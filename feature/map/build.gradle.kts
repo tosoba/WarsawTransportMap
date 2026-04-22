@@ -10,6 +10,7 @@ kotlin {
     namespace = "com.trm.warsawtransportmap.feature.map"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     minSdk = libs.versions.android.minSdk.get().toInt()
+    androidResources { enable = true }
   }
 
   iosArm64()
@@ -25,6 +26,7 @@ kotlin {
       implementation(libs.androidx.lifecycle.runtimeCompose)
       implementation(libs.androidx.lifecycle.viewmodelCompose)
 
+      implementation(libs.compose.components.resources)
       implementation(libs.compose.ui)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)

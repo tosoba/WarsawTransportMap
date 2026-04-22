@@ -1,5 +1,6 @@
 package com.trm.warsawtransportmap.feature.map
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,22 +19,39 @@ import org.maplibre.compose.expressions.dsl.not
 import org.maplibre.compose.expressions.dsl.step
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.map.GestureOptions
+import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.map.OrnamentOptions
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
+import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
+import warsawtransportmap.feature.map.generated.resources.Res // Import generated Res
 
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
   val cameraState = rememberCameraState()
 
-  MaplibreMap(modifier = Modifier.fillMaxSize(), cameraState = cameraState) {
+  MaplibreMap(
+    modifier = Modifier.fillMaxSize(),
+    baseStyle =
+      BaseStyle.Uri(
+        Res.getUri(if (isSystemInDarkTheme()) "files/dark_style.json" else "files/light_style.json")
+      ),
+    options =
+      MapOptions(
+        gestureOptions = GestureOptions.RotationLocked,
+        ornamentOptions = OrnamentOptions.AllDisabled,
+      ),
+    cameraState = cameraState,
+  ) {
     if (vehicles.isEmpty()) return@MaplibreMap
 
     val geoJsonData =
