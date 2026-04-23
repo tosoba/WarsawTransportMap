@@ -10,7 +10,7 @@ enum class VehicleType {
 
 @Serializable
 data class Vehicle(
-  val lines: String,
+  val lineNumber: String,
   val longitude: Double,
   val latitude: Double,
   val vehicleNumber: String,

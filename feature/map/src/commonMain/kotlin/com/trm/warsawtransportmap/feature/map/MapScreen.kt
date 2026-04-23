@@ -2,11 +2,12 @@ package com.trm.warsawtransportmap.feature.map
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.serialization.json.JsonPrimitive
 import org.koin.compose.viewmodel.koinViewModel
@@ -32,7 +33,7 @@ import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
-import warsawtransportmap.feature.map.generated.resources.Res // Import generated Res
+import warsawtransportmap.feature.map.generated.resources.Res
 
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
@@ -61,7 +62,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
             Feature(
               id = JsonPrimitive(vehicle.vehicleNumber),
               geometry = Point(Position(vehicle.longitude, vehicle.latitude)),
-              properties = Unit,
+              properties = vehicle,
             )
           }
         )
@@ -77,14 +78,20 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
       id = "clustered-markers",
       source = markersSource,
       filter = feature.has("point_count"),
-      color = const(Color(0xFF51bbd6)),
-      opacity = const(0.6f),
+      color =
+        step(
+          input = feature["point_count"].asNumber(),
+          fallback = const(MaterialTheme.colorScheme.tertiaryContainer),
+          50 to const(MaterialTheme.colorScheme.secondaryContainer),
+          100 to const(MaterialTheme.colorScheme.primaryContainer),
+        ),
+      opacity = const(.9f),
       radius =
         step(
           input = feature["point_count"].asNumber(),
-          fallback = const(20.dp),
-          10 to const(30.dp),
-          50 to const(40.dp),
+          fallback = const(24.dp),
+          50 to const(32.dp),
+          100 to const(40.dp),
         ),
       onClick = { features -> ClickResult.Consume },
     )
@@ -93,18 +100,39 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
       id = "clustered-markers-count",
       source = markersSource,
       filter = feature.has("point_count"),
-      textField = feature["point_count"].asString(),
-      textColor = const(Color.White),
+      textField = feature["point_count_abbreviated"].asString(),
+      textFont = const(listOf("Noto Sans Regular")),
+      textColor =
+        step(
+          input = feature["point_count"].asNumber(),
+          fallback = const(MaterialTheme.colorScheme.onTertiaryContainer),
+          50 to const(MaterialTheme.colorScheme.onSecondaryContainer),
+          100 to const(MaterialTheme.colorScheme.onPrimaryContainer),
+        ),
+      textAllowOverlap = const(true),
+      iconAllowOverlap = const(true),
     )
 
     CircleLayer(
       id = "unclustered-markers",
       source = markersSource,
       filter = !feature.has("point_count"),
-      color = const(Color.Red),
-      radius = const(10.dp),
-      strokeColor = const(Color.White),
-      strokeWidth = const(2.dp),
+      color = const(MaterialTheme.colorScheme.surfaceContainerHighest),
+      radius = const(16.dp),
+      strokeColor = const(MaterialTheme.colorScheme.onSurfaceVariant),
+      strokeWidth = const(1.dp),
+    )
+
+    SymbolLayer(
+      id = "unclustered-markers-numbers",
+      source = markersSource,
+      filter = feature.has("lineNumber"),
+      textField = feature["lineNumber"].asString(),
+      textFont = const(listOf("Noto Sans Regular")),
+      textColor = const(MaterialTheme.colorScheme.onSurface),
+      textSize = const(12.sp),
+      textAllowOverlap = const(true),
+      iconAllowOverlap = const(true),
     )
   }
 }

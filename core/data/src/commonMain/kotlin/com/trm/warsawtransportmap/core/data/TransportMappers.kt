@@ -5,7 +5,7 @@ import com.trm.warsawtransportmap.core.network.model.BusTramItem
 
 internal fun BusTramItem.toDomain(): Vehicle =
   Vehicle(
-    lines = lines,
+    lineNumber = lines,
     longitude = lon,
     latitude = lat,
     vehicleNumber = vehicleNumber,
