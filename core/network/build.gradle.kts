@@ -11,16 +11,14 @@ val localProperties =
   Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) {
-      file.inputStream().use { load(it) }
+      file.inputStream().use(::load)
     }
   }
 
 buildConfig {
   useKotlinOutput { topLevelConstants = true }
   packageName("com.trm.warsawtransportmap.core.network")
-
-  val apiKey = localProperties.getProperty("UM_API_KEY") ?: ""
-  buildConfigField("UM_API_KEY", apiKey)
+  buildConfigField("UM_API_KEY", localProperties.getProperty("UM_API_KEY").orEmpty())
 }
 
 kotlin {
