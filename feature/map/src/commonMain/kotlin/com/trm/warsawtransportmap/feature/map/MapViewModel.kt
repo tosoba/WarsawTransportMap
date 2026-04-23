@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.warsawtransportmap.core.data.TransportRepository
 import com.trm.warsawtransportmap.core.model.Vehicle
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -30,16 +31,26 @@ class MapViewModel(
   val errors = _errors.receiveAsFlow()
 
   private var fetchJob: Job? = null
-  private var lastRequestTimeEpoch: Long
-    get() = savedStateHandle[KEY_LAST_REQUEST_TIME_EPOCH] ?: 0L
+
+  private var lastBackgroundTimeEpoch: Long
+    get() = savedStateHandle[KEY_LAST_BACKGROUND_TIME_EPOCH] ?: 0L
     set(value) {
-      savedStateHandle[KEY_LAST_REQUEST_TIME_EPOCH] = value
+      savedStateHandle[KEY_LAST_BACKGROUND_TIME_EPOCH] = value
+    }
+
+  private var wasExecuted: Boolean
+    get() = savedStateHandle[KEY_WAS_EXECUTED] ?: false
+    set(value) {
+      savedStateHandle[KEY_WAS_EXECUTED] = value
     }
 
   private val lifecycleObserver = LifecycleEventObserver { _, event ->
     when (event) {
-      Lifecycle.Event.ON_START -> handleForeground()
-      Lifecycle.Event.ON_STOP -> handleBackground()
+      Lifecycle.Event.ON_START -> startPeriodicFetch()
+      Lifecycle.Event.ON_STOP -> {
+        lastBackgroundTimeEpoch = Clock.System.now().toEpochMilliseconds()
+        stopPeriodicFetch()
+      }
       else -> {}
     }
   }
@@ -48,24 +59,30 @@ class MapViewModel(
     lifecycle.addObserver(lifecycleObserver)
   }
 
-  private fun handleForeground() {
-    val now = Clock.System.now().toEpochMilliseconds()
-    if (lastRequestTimeEpoch == 0L || (now - lastRequestTimeEpoch) >= 30_000L) {
-      fetchVehicles()
-    }
-    startPeriodicFetch()
-  }
-
-  private fun handleBackground() {
-    stopPeriodicFetch()
-  }
-
   private fun startPeriodicFetch() {
-    stopPeriodicFetch()
+    val backgroundTime = lastBackgroundTimeEpoch
+    lastBackgroundTimeEpoch = 0L
+
     fetchJob = viewModelScope.launch {
+      delay(
+        when {
+          !wasExecuted -> {
+            0L
+          }
+          backgroundTime != 0L -> {
+            maxOf(
+              0L,
+              MAX_FETCH_DELAY_MILLIS - (Clock.System.now().toEpochMilliseconds() - backgroundTime),
+            )
+          }
+          else -> {
+            MAX_FETCH_DELAY_MILLIS
+          }
+        }
+      )
       while (isActive) {
-        delay(30_000)
         fetchVehicles()
+        delay(MAX_FETCH_DELAY_MILLIS)
       }
     }
   }
@@ -75,15 +92,14 @@ class MapViewModel(
     fetchJob = null
   }
 
-  private fun fetchVehicles() {
-    viewModelScope.launch {
-      try {
-        lastRequestTimeEpoch = Clock.System.now().toEpochMilliseconds()
-        val result = repository.getVehicles()
-        _vehicles.value = result
-      } catch (e: Exception) {
-        _errors.send(e)
-      }
+  private suspend fun fetchVehicles() {
+    try {
+      _vehicles.value = repository.getVehicles()
+    } catch (ex: Exception) {
+      if (ex is CancellationException) throw ex
+      _errors.send(ex)
+    } finally {
+      wasExecuted = true
     }
   }
 
@@ -94,6 +110,8 @@ class MapViewModel(
   }
 
   companion object {
-    private const val KEY_LAST_REQUEST_TIME_EPOCH = "last_request_time_epoch"
+    private const val MAX_FETCH_DELAY_MILLIS = 30_000L
+    private const val KEY_WAS_EXECUTED = "KEY_WAS_EXECUTED"
+    private const val KEY_LAST_BACKGROUND_TIME_EPOCH = "KEY_LAST_BACKGROUND_TIME_EPOCH"
   }
 }
