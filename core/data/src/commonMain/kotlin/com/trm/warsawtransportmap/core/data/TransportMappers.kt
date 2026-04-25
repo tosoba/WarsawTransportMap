@@ -1,9 +1,9 @@
 package com.trm.warsawtransportmap.core.data
 
 import com.trm.warsawtransportmap.core.model.Vehicle
-import com.trm.warsawtransportmap.core.network.model.BusTramItem
+import com.trm.warsawtransportmap.core.network.model.VehicleResponseItem
 
-internal fun BusTramItem.toDomain(): Vehicle =
+internal fun VehicleResponseItem.toDomain(): Vehicle =
   Vehicle(
     lineNumber = lines,
     longitude = lon,

@@ -2,14 +2,19 @@ package com.trm.warsawtransportmap.core.data
 
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.core.network.client.UmApiClient
-import com.trm.warsawtransportmap.core.network.model.BusTramItem
+import com.trm.warsawtransportmap.core.network.model.VehicleResponseItem
+import com.trm.warsawtransportmap.core.network.model.VehicleType
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 internal class TransportNetworkRepository(private val apiClient: UmApiClient) :
   TransportRepository {
-  override suspend fun getVehicles(): List<Vehicle> =
-    apiClient.getBusesAndTrams(RESOURCE_ID, type = 1).result.map(BusTramItem::toDomain)
-
-  companion object {
-    private const val RESOURCE_ID = "f2e5503e-927d-4ad3-9500-4ab9e55deb59"
+  override suspend fun getVehicles(): List<Vehicle> = coroutineScope {
+    val buses = async { fetchVehicles(VehicleType.BUS) }
+    val trams = async { fetchVehicles(VehicleType.TRAM) }
+    trams.await() + buses.await()
   }
+
+  private suspend fun fetchVehicles(type: VehicleType): List<Vehicle> =
+    apiClient.getVehicles(type).result.map(VehicleResponseItem::toDomain)
 }

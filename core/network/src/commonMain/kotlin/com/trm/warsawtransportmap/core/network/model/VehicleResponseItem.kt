@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BusTramItem(
+data class VehicleResponseItem(
   @SerialName("Lines") val lines: String,
   @SerialName("Lon") val lon: Double,
   @SerialName("Lat") val lat: Double,

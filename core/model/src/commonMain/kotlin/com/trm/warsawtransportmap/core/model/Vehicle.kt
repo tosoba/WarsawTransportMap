@@ -3,12 +3,6 @@ package com.trm.warsawtransportmap.core.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class VehicleType {
-  BUS,
-  TRAM,
-}
-
-@Serializable
 data class Vehicle(
   val lineNumber: String,
   val longitude: Double,
@@ -16,5 +10,4 @@ data class Vehicle(
   val vehicleNumber: String,
   val time: String,
   val brigade: String,
-  val type: VehicleType? = null,
 )
