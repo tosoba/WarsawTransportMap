@@ -35,6 +35,7 @@ kotlin {
     commonMain.dependencies {
       api(libs.ktor.client.core)
       api(libs.ktor.client.content.negotiation)
+      api(libs.ktor.client.logging)
       api(libs.ktor.serialization.kotlinx.json)
       api(libs.kotlinx.serialization.json)
       api(libs.koin.core)
