@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.trm.warsawtransportmap.core.common.extensions.calculateDistanceBetweenKm
 import com.trm.warsawtransportmap.core.data.TransportRepository
 import com.trm.warsawtransportmap.core.model.Vehicle
+import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LAT
+import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LON
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -123,9 +125,6 @@ class MapViewModel(
 
     private const val KEY_WAS_EXECUTED = "KEY_WAS_EXECUTED"
     private const val KEY_LAST_BACKGROUND_TIME_EPOCH = "KEY_LAST_BACKGROUND_TIME_EPOCH"
-
-    private const val WARSAW_CENTER_LAT = 52.2318
-    private const val WARSAW_CENTER_LON = 21.0060
 
     private const val MAX_DISTANCE_KM = 50.0
   }

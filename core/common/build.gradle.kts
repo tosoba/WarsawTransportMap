@@ -1,6 +1,8 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.androidKotlinMultiplatformLibrary)
+  alias(libs.plugins.composeMultiplatform)
+  alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
@@ -17,8 +19,16 @@ kotlin {
     androidMain.dependencies { implementation(libs.androidx.lifecycle.process) }
 
     commonMain.dependencies {
+      implementation(project(":core:model"))
+
       implementation(libs.androidx.lifecycle.runtime)
+
+      implementation(libs.compose.foundation)
+      implementation(libs.compose.runtime)
+
       implementation(libs.koin.core)
+
+      implementation(libs.maplibre.compose)
     }
   }
 }

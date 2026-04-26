@@ -1,6 +1,8 @@
 package com.trm.warsawtransportmap.core.common.extensions
 
+import org.maplibre.spatialk.geojson.Position
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -16,3 +18,9 @@ fun calculateDistanceBetweenKm(lat1: Double, lon1: Double, lat2: Double, lon2: D
   val c = 2 * atan2(sqrt(a), sqrt(1 - a))
   return r * c
 }
+
+fun Position.isAwayFrom(latitude: Double, longitude: Double): Boolean =
+  abs(this.latitude - latitude) > MIN_COORDINATE_DELTA ||
+    abs(this.longitude - longitude) > MIN_COORDINATE_DELTA
+
+private const val MIN_COORDINATE_DELTA = 0.0001
