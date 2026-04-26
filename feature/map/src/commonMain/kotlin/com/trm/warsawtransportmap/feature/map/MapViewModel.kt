@@ -5,10 +5,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.trm.warsawtransportmap.core.common.extensions.calculateDistanceBetweenKm
 import com.trm.warsawtransportmap.core.data.TransportRepository
 import com.trm.warsawtransportmap.core.model.Vehicle
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Clock
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -18,6 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Clock
 
 class MapViewModel(
   private val repository: TransportRepository,
@@ -94,7 +95,15 @@ class MapViewModel(
 
   private suspend fun fetchVehicles() {
     try {
-      _vehicles.value = repository.getVehicles()
+      _vehicles.value =
+        repository.getVehicles().filter { vehicle ->
+          calculateDistanceBetweenKm(
+            lat1 = WARSAW_CENTER_LAT,
+            lon1 = WARSAW_CENTER_LON,
+            lat2 = vehicle.latitude,
+            lon2 = vehicle.longitude,
+          ) <= MAX_DISTANCE_KM
+        }
     } catch (ex: Exception) {
       if (ex is CancellationException) throw ex
       _errors.send(ex)
@@ -111,7 +120,13 @@ class MapViewModel(
 
   companion object {
     private const val MAX_FETCH_DELAY_MILLIS = 30_000L
+
     private const val KEY_WAS_EXECUTED = "KEY_WAS_EXECUTED"
     private const val KEY_LAST_BACKGROUND_TIME_EPOCH = "KEY_LAST_BACKGROUND_TIME_EPOCH"
+
+    private const val WARSAW_CENTER_LAT = 52.2318
+    private const val WARSAW_CENTER_LON = 21.0060
+
+    private const val MAX_DISTANCE_KM = 50.0
   }
 }
