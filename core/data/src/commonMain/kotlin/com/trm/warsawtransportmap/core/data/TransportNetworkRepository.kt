@@ -1,5 +1,6 @@
 package com.trm.warsawtransportmap.core.data
 
+import com.trm.warsawtransportmap.core.model.Line
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.core.network.client.UmApiClient
 import com.trm.warsawtransportmap.core.network.model.VehicleResponseItem
@@ -14,6 +15,18 @@ internal class TransportNetworkRepository(private val apiClient: UmApiClient) :
     val trams = async { fetchVehicles(VehicleType.TRAM) }
     trams.await() + buses.await()
   }
+
+  override suspend fun getLines(): List<Line> =
+    apiClient
+      .getLines()
+      .result
+      .keys
+      .sortedWith(
+        compareBy<String> { it.toIntOrNull() == null }
+          .thenBy { it.toIntOrNull() ?: 0 }
+          .thenBy { it }
+      )
+      .map(::Line)
 
   private suspend fun fetchVehicles(type: VehicleType): List<Vehicle> =
     apiClient.getVehicles(type).result.map(VehicleResponseItem::toDomain)

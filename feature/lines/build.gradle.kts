@@ -3,56 +3,41 @@ plugins {
   alias(libs.plugins.androidKotlinMultiplatformLibrary)
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
-  alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
-  jvmToolchain(21)
-
   android {
-    namespace = "com.trm.warsawtransportmap"
+    namespace = "com.trm.warsawtransportmap.feature.lines"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     minSdk = libs.versions.android.minSdk.get().toInt()
     androidResources { enable = true }
   }
 
-  listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
-    iosTarget.binaries.framework {
-      baseName = "ComposeApp"
-      isStatic = true
-    }
-  }
+  iosArm64()
+  iosSimulatorArm64()
 
   sourceSets {
-    androidMain.dependencies {
-      implementation(libs.androidx.activity.compose)
-
-      implementation(libs.compose.uiToolingPreview)
-    }
-
     commonMain.dependencies {
       implementation(project(":core:common"))
       implementation(project(":core:data"))
-      implementation(project(":core:network"))
-      implementation(project(":feature:map"))
-      implementation(project(":feature:lines"))
+      implementation(project(":core:model"))
 
+      implementation(libs.androidx.lifecycle.runtime)
       implementation(libs.androidx.lifecycle.runtimeCompose)
       implementation(libs.androidx.lifecycle.viewmodelCompose)
 
       implementation(libs.compose.components.resources)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
+      implementation(libs.compose.materialIconsExtended)
       implementation(libs.compose.runtime)
       implementation(libs.compose.ui)
-      implementation(libs.compose.uiToolingPreview)
 
-      implementation(libs.koin.core)
       implementation(libs.koin.compose)
+      implementation(libs.koin.compose.viewmodel)
+      implementation(libs.koin.core)
 
-      implementation(libs.navigation3.ui)
+      implementation(libs.kotlinx.datetime)
     }
-
-    commonTest.dependencies { implementation(libs.kotlin.test) }
   }
 }

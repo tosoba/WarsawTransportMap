@@ -7,7 +7,7 @@ androidx-activity = "1.13.0"
 androidx-lifecycle = "2.10.0"
 buildconfig = "6.0.9"
 compose-material-icons = "1.7.3"
-compose-multiplatform = "1.10.3"
+compose-multiplatform = "1.11.0-beta03"
 koin = "4.2.1"
 kotlin = "2.3.21"
 kotlinx-coroutines = "1.10.2"
@@ -16,6 +16,7 @@ kotlinx-serialization = "1.11.0"
 ktor = "3.4.3"
 maplibre = "0.12.1"
 material3 = "1.11.0-alpha07"
+navigation3 = "1.1.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -45,6 +46,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

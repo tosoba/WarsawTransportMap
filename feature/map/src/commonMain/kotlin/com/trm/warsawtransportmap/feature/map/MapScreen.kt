@@ -31,7 +31,7 @@ import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.spatialk.geojson.Position
 
 @Composable
-fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
+fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -> Unit) {
   val scope = rememberCoroutineScope()
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
   val firstPosition = remember {
@@ -84,7 +84,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel()) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        FloatingActionButton(onClick = {}) {
+        FloatingActionButton(onClick = onNavigateToLines) {
           Icon(imageVector = Icons.Default.GridView, contentDescription = "Filter lines")
         }
       }

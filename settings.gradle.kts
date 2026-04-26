@@ -41,4 +41,6 @@ include(":core:network")
 
 include(":core:model")
 
+include(":feature:lines")
+
 include(":feature:map")
