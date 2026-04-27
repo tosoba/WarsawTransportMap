@@ -6,27 +6,45 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.warsawtransportmap.core.common.extensions.calculateDistanceBetweenKm
-import com.trm.warsawtransportmap.core.data.TransportRepository
+import com.trm.warsawtransportmap.core.domain.PreferencesRepository
+import com.trm.warsawtransportmap.core.domain.TransportRepository
+import com.trm.warsawtransportmap.core.model.CameraPosition
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LAT
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LON
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Clock
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Clock
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModel(
-  private val repository: TransportRepository,
+  private val transportRepository: TransportRepository,
+  private val preferencesRepository: PreferencesRepository,
   private val lifecycle: Lifecycle,
   private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+  val initialCameraPosition =
+    flow { emit(preferencesRepository.cameraPosition.firstOrNull()) }
+      .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = null)
+
+  private val cameraPositionChanges = MutableSharedFlow<MapCameraPosition>()
+
   private val _vehicles = MutableStateFlow<List<Vehicle>>(emptyList())
   val vehicles: StateFlow<List<Vehicle>> = _vehicles.asStateFlow()
 
@@ -60,6 +78,22 @@ class MapViewModel(
 
   init {
     lifecycle.addObserver(lifecycleObserver)
+
+    cameraPositionChanges
+      .mapLatest {
+        preferencesRepository.saveCameraPosition(
+          CameraPosition(
+            latitude = it.target.latitude,
+            longitude = it.target.longitude,
+            zoom = it.zoom,
+          )
+        )
+      }
+      .launchIn(viewModelScope)
+  }
+
+  fun onCameraPositionChange(position: MapCameraPosition) {
+    viewModelScope.launch { cameraPositionChanges.emit(position) }
   }
 
   private fun startPeriodicFetch() {
@@ -98,7 +132,7 @@ class MapViewModel(
   private suspend fun fetchVehicles() {
     try {
       _vehicles.value =
-        repository.getVehicles().filter { vehicle ->
+        transportRepository.getVehicles().filter { vehicle ->
           calculateDistanceBetweenKm(
             lat1 = WARSAW_CENTER_LAT,
             lon1 = WARSAW_CENTER_LON,

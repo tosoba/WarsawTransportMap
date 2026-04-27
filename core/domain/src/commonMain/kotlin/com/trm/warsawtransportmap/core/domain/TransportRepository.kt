@@ -1,4 +1,4 @@
-package com.trm.warsawtransportmap.core.data
+package com.trm.warsawtransportmap.core.domain
 
 import com.trm.warsawtransportmap.core.model.Line
 import com.trm.warsawtransportmap.core.model.Vehicle

@@ -16,6 +16,8 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(project(":core:common"))
+      implementation(project(":core:datastore"))
+      implementation(project(":core:domain"))
       implementation(project(":core:model"))
       implementation(project(":core:network"))
 
@@ -29,5 +31,7 @@ kotlin {
       implementation(libs.kotlinx.datetime)
       implementation(libs.kotlinx.serialization.json)
     }
+
+    val androidMain by getting { dependencies { implementation(libs.koin.android) } }
   }
 }

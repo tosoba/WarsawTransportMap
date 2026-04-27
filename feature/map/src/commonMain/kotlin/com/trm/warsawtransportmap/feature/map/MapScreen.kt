@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,8 +33,10 @@ import org.maplibre.spatialk.geojson.Position
 
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -> Unit) {
-  val scope = rememberCoroutineScope()
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
+
+  val initialCameraPosition by
+    viewModel.initialCameraPosition.collectAsStateWithLifecycle(initialValue = null)
   val firstPosition = remember {
     CameraPosition(
       target =
@@ -44,7 +47,14 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     )
   }
   val cameraState = rememberCameraState(firstPosition = firstPosition)
-  val boundingBox = rememberMapVehiclesBoundingBox(vehicles, percentageIncrease = 0.1)
+
+  LaunchedEffect(cameraState.isCameraMoving) {
+    if (!cameraState.isCameraMoving && cameraState.moveReason == CameraMoveReason.GESTURE) {
+      viewModel.onCameraPositionChange(cameraState.position)
+    }
+  }
+
+  val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
   val center =
     remember(boundingBox) {
       boundingBox?.let {
@@ -60,15 +70,28 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
         )
     }
 
-  if (
-    cameraState.moveReason == CameraMoveReason.NONE ||
-      cameraState.moveReason == CameraMoveReason.PROGRAMMATIC
-  ) {
-    MapCameraAnimateToBoundingBoxEffect(boundingBox, cameraState)
+  initialCameraPosition?.let {
+    LaunchedEffect(Unit) {
+      cameraState.animateTo(
+        CameraPosition(
+          target = Position(latitude = it.latitude, longitude = it.longitude),
+          zoom = it.zoom,
+        )
+      )
+    }
   }
+    ?: run {
+      if (
+        cameraState.moveReason == CameraMoveReason.NONE ||
+          cameraState.moveReason == CameraMoveReason.PROGRAMMATIC
+      ) {
+        MapCameraAnimateToBoundingBoxEffect(boundingBox, cameraState)
+      }
+    }
 
   Scaffold(
     floatingActionButton = {
+      val scope = rememberCoroutineScope()
       Column(horizontalAlignment = Alignment.End) {
         AnimatedVisibility(showResetToBoundingBoxButton) {
           SmallFloatingActionButton(

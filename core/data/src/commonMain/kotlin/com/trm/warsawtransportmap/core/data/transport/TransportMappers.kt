@@ -1,4 +1,4 @@
-package com.trm.warsawtransportmap.core.data
+package com.trm.warsawtransportmap.core.data.transport
 
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.core.network.model.VehicleResponseItem

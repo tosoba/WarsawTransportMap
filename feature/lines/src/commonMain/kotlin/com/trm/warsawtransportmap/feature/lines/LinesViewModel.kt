@@ -3,7 +3,7 @@ package com.trm.warsawtransportmap.feature.lines
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trm.warsawtransportmap.core.common.model.Loadable
-import com.trm.warsawtransportmap.core.data.TransportRepository
+import com.trm.warsawtransportmap.core.domain.TransportRepository
 import com.trm.warsawtransportmap.core.model.Line
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow

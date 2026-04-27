@@ -10,16 +10,16 @@ import org.maplibre.spatialk.geojson.BoundingBox
 
 @Composable
 fun rememberMapVehiclesBoundingBox(
-  vehicle: List<Vehicle>,
+  vehicles: List<Vehicle>,
   percentageIncrease: Double,
 ): BoundingBox? =
-  remember(vehicle, percentageIncrease) {
-    if (vehicle.isEmpty()) return@remember null
+  remember(vehicles, percentageIncrease) {
+    if (vehicles.isEmpty()) return@remember null
 
-    val minLat = vehicle.minOf(Vehicle::latitude)
-    val maxLat = vehicle.maxOf(Vehicle::latitude)
-    val minLon = vehicle.minOf(Vehicle::longitude)
-    val maxLon = vehicle.maxOf(Vehicle::longitude)
+    val minLat = vehicles.minOf(Vehicle::latitude)
+    val maxLat = vehicles.maxOf(Vehicle::latitude)
+    val minLon = vehicles.minOf(Vehicle::longitude)
+    val maxLon = vehicles.maxOf(Vehicle::longitude)
 
     val latDelta = maxLat - minLat
     val lonDelta = maxLon - minLon
