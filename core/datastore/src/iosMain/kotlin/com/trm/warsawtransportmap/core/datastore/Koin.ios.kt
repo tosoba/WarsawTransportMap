@@ -9,7 +9,7 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 
 @OptIn(ExperimentalForeignApi::class)
-actual val dataStoreModule: Module = module {
+actual val coreDataStoreModule: Module = module {
   single {
     createDataStore {
       val documentDirectory: NSURL =

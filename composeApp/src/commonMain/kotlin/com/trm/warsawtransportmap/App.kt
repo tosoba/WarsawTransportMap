@@ -11,7 +11,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.trm.warsawtransportmap.core.common.coreCommonModule
 import com.trm.warsawtransportmap.core.data.coreDataModule
-import com.trm.warsawtransportmap.core.datastore.dataStoreModule
+import com.trm.warsawtransportmap.core.datastore.coreDataStoreModule
 import com.trm.warsawtransportmap.core.network.di.coreNetworkModule
 import com.trm.warsawtransportmap.feature.lines.LinesScreen
 import com.trm.warsawtransportmap.feature.lines.featureLinesModule
@@ -20,24 +20,22 @@ import com.trm.warsawtransportmap.feature.map.featureMapModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.KoinApplication
-import org.koin.core.KoinApplication as KoinApp
 import org.koin.dsl.KoinConfiguration
 
 @Composable
 @Preview
-fun App(koinConfiguration: KoinApp.() -> Unit = {}) {
+fun App() {
   KoinApplication(
     configuration =
       KoinConfiguration {
         modules(
           coreCommonModule,
           coreDataModule,
-          dataStoreModule,
+          coreDataStoreModule,
           coreNetworkModule,
-          featureMapModule,
           featureLinesModule,
+          featureMapModule,
         )
-        koinConfiguration()
       }
   ) {
     val backStack =

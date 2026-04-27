@@ -12,8 +12,6 @@ import com.trm.warsawtransportmap.core.model.CameraPosition
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LAT
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LON
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -31,6 +29,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModel(
@@ -117,6 +117,7 @@ class MapViewModel(
           }
         }
       )
+
       while (isActive) {
         fetchVehicles()
         delay(MAX_FETCH_DELAY_MILLIS)
