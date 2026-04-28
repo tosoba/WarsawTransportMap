@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LinesViewModel(private val repository: TransportRepository) : ViewModel() {
-  private val _state = MutableStateFlow<Loadable<List<Line>>>(Loadable.Loading)
-  val state: StateFlow<Loadable<List<Line>>> = _state.asStateFlow()
+  private val _state = MutableStateFlow<Loadable<Map<String, List<Line>>>>(Loadable.Loading)
+  val state: StateFlow<Loadable<Map<String, List<Line>>>> = _state.asStateFlow()
 
   init {
     loadLines()
@@ -23,11 +23,22 @@ class LinesViewModel(private val repository: TransportRepository) : ViewModel() 
     viewModelScope.launch {
       _state.value = Loadable.Loading
       try {
-        _state.value = Loadable.Loaded(repository.getLines())
+        _state.value = Loadable.Loaded(repository.getLines().grouped())
       } catch (ex: Exception) {
         ensureActive()
         _state.value = Loadable.Error(ex.message)
       }
+    }
+  }
+
+  private fun List<Line>.grouped(): Map<String, List<Line>> = groupBy { line ->
+    val number = line.number
+    val intValue = number.toIntOrNull()
+    if (intValue != null) {
+      val group = (intValue / 100) * 100
+      if (group == 0) "1" else group.toString()
+    } else {
+      number.firstOrNull()?.uppercase().orEmpty()
     }
   }
 }
