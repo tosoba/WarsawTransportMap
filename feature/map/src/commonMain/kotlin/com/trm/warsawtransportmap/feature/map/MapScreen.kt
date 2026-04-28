@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.MapCameraAnimateToBoundingBoxEffect
-import com.trm.warsawtransportmap.core.common.extensions.isAwayFrom
 import com.trm.warsawtransportmap.core.common.extensions.rememberMapVehiclesBoundingBox
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -55,20 +54,6 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
   }
 
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
-  val center =
-    remember(boundingBox) {
-      boundingBox?.let {
-        Position(longitude = (it.west + it.east) / 2.0, latitude = (it.south + it.north) / 2.0)
-      }
-    }
-  val showResetToBoundingBoxButton =
-    remember(cameraState.position.target, center) {
-      center != null &&
-        cameraState.position.target.isAwayFrom(
-          latitude = center.latitude,
-          longitude = center.longitude,
-        )
-    }
 
   initialCameraPosition?.let {
     LaunchedEffect(Unit) {
@@ -92,8 +77,9 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
   Scaffold(
     floatingActionButton = {
       val scope = rememberCoroutineScope()
+
       Column(horizontalAlignment = Alignment.End) {
-        AnimatedVisibility(showResetToBoundingBoxButton) {
+        AnimatedVisibility(visible = vehicles.isNotEmpty()) {
           SmallFloatingActionButton(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             onClick = { boundingBox?.let { scope.launch { cameraState.animateTo(it) } } },
