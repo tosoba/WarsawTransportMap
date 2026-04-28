@@ -6,6 +6,7 @@ import com.trm.warsawtransportmap.core.network.model.VehicleType
 import com.trm.warsawtransportmap.core.network.model.VehiclesResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -47,6 +48,7 @@ class UmApiClient(private val httpClient: HttpClient) {
 
 fun umApiHttpClient(json: Json): HttpClient = HttpClient {
   install(ContentNegotiation) { json(json) }
+  install(HttpCache)
   install(Logging) {
     logger = Logger.SIMPLE
     level = LogLevel.ALL
