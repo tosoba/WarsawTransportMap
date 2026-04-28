@@ -48,7 +48,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
   val cameraState = rememberCameraState(firstPosition = firstPosition)
 
   LaunchedEffect(cameraState.isCameraMoving) {
-    if (!cameraState.isCameraMoving && cameraState.moveReason == CameraMoveReason.GESTURE) {
+    if (!cameraState.isCameraMoving) {
       viewModel.onCameraPositionChange(cameraState.position)
     }
   }
