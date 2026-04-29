@@ -59,7 +59,9 @@ fun App() {
             entry<MapNavKey> {
               MapScreen(onNavigateToLines = dropUnlessResumed { backStack.add(LinesNavKey) })
             }
-            entry<LinesNavKey> { LinesScreen() }
+            entry<LinesNavKey> {
+              LinesScreen(onBackClick = dropUnlessResumed { backStack.removeLastOrNull() })
+            }
           },
       )
     }
