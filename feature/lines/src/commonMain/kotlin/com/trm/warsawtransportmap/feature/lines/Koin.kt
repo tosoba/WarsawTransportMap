@@ -1,6 +1,6 @@
 package com.trm.warsawtransportmap.feature.lines
 
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-val featureLinesModule = module { viewModel { LinesViewModel(get()) } }
+val featureLinesModule = module { viewModelOf(::LinesViewModel) }

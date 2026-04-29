@@ -42,26 +42,21 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberContainedSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.model.Loadable
-import com.trm.warsawtransportmap.core.model.Line
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> Unit) {
-  val loadableState by viewModel.state.collectAsStateWithLifecycle()
-  val selectedLines = rememberSaveable { mutableStateSetOf<String>() }
-
+  val state by viewModel.state.collectAsStateWithLifecycle()
   val textFieldState = rememberTextFieldState()
   val searchBarState = rememberContainedSearchBarState()
   val scope = rememberCoroutineScope()
@@ -83,7 +78,7 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
             textFieldState = textFieldState,
             searchBarState = searchBarState,
             colors = appBarWithSearchColors.searchBarColors.inputFieldColors,
-            enabled = loadableState is Loadable.Loaded,
+            enabled = state is Loadable.Loaded,
             onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
             placeholder = { Text(text = "Search lines") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
@@ -103,21 +98,12 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
           }
         },
         actions = {
-          val allLines =
-            remember(loadableState) {
-              when (val state = loadableState) {
-                is Loadable.Loaded -> state.data.values.flatten()
-                else -> emptyList()
-              }
+          val allSelected =
+            remember(state) {
+              val lines = (state as? Loadable.Loaded)?.data?.values?.flatten().orEmpty()
+              lines.isNotEmpty() && lines.all(LineState::isSelected)
             }
-          val allSelected = selectedLines.size == allLines.size
-          IconButton(
-            enabled = allLines.isNotEmpty(),
-            onClick = {
-              if (allSelected) selectedLines.clear()
-              else selectedLines.addAll(allLines.map(Line::number))
-            },
-          ) {
+          IconButton(enabled = state is Loadable.Loaded, onClick = viewModel::toggleAll) {
             Icon(
               imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
               contentDescription = if (allSelected) "Deselect all" else "Select all",
@@ -128,11 +114,11 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
     },
   ) { padding ->
     Crossfade(
-      targetState = loadableState,
+      targetState = state,
       modifier =
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(padding),
-    ) { state ->
-      when (state) {
+    ) { loadableState ->
+      when (loadableState) {
         Loadable.Loading -> {
           Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -141,26 +127,26 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
         is Loadable.Loaded -> {
           LinesGrid(
             groupedLines =
-              remember(textFieldState.text) {
+              remember(textFieldState.text, loadableState) {
                 val query = textFieldState.text.toString()
                 if (query.isBlank()) {
-                  state.data
+                  loadableState.data
                 } else {
-                  state.data
+                  loadableState.data
                     .mapValues { (_, lines) ->
                       lines.filter { it.number.contains(query, ignoreCase = true) }
                     }
                     .filterValues { it.isNotEmpty() }
                 }
               },
-            selectedLines = selectedLines,
+            onLineClick = viewModel::toggleLine,
           )
         }
         is Loadable.Error -> {
           Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
               Text(
-                text = state.message ?: "Unknown error",
+                text = loadableState.message ?: "Unknown error",
                 color = MaterialTheme.colorScheme.onBackground,
               )
 
@@ -176,7 +162,7 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
 }
 
 @Composable
-private fun LinesGrid(groupedLines: Map<String, List<Line>>, selectedLines: MutableSet<String>) {
+private fun LinesGrid(groupedLines: Map<String, List<LineState>>, onLineClick: (String) -> Unit) {
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 80.dp),
     contentPadding = PaddingValues(16.dp),
@@ -187,15 +173,8 @@ private fun LinesGrid(groupedLines: Map<String, List<Line>>, selectedLines: Muta
     groupedLines.forEach { (header, lines) ->
       item(span = { GridItemSpan(maxLineSpan) }, key = "header_$header") { LineGroupHeader(header) }
 
-      items(lines, key = Line::number) { line ->
-        val isSelected = selectedLines.contains(line.number)
-        LineButton(
-          line = line,
-          isSelected = isSelected,
-          onClick = {
-            if (isSelected) selectedLines.remove(line.number) else selectedLines.add(line.number)
-          },
-        )
+      items(lines, key = LineState::number) { line ->
+        LineButton(line = line, onClick = { onLineClick(line.number) })
       }
     }
   }
@@ -220,9 +199,9 @@ private fun LazyGridItemScope.LineGroupHeader(title: String) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun LazyGridItemScope.LineButton(line: Line, isSelected: Boolean, onClick: () -> Unit) {
+private fun LazyGridItemScope.LineButton(line: LineState, onClick: () -> Unit) {
   ToggleButton(
-    checked = isSelected,
+    checked = line.isSelected,
     onCheckedChange = { onClick() },
     modifier = Modifier.animateItem(),
   ) {

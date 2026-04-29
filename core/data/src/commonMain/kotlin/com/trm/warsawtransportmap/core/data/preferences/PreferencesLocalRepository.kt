@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.trm.warsawtransportmap.core.domain.PreferencesRepository
 import com.trm.warsawtransportmap.core.model.CameraPosition
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,9 @@ class PreferencesLocalRepository(private val dataStore: DataStore<Preferences>) 
       }
     }
 
+  override val selectedLines: Flow<Set<String>?> =
+    dataStore.data.map { preferences -> preferences[SELECTED_LINES_KEY] }
+
   override suspend fun saveCameraPosition(cameraPosition: CameraPosition) {
     dataStore.edit { preferences ->
       preferences[LATITUDE_KEY] = cameraPosition.latitude
@@ -31,9 +35,14 @@ class PreferencesLocalRepository(private val dataStore: DataStore<Preferences>) 
     }
   }
 
+  override suspend fun saveSelectedLines(selectedLines: Set<String>) {
+    dataStore.edit { preferences -> preferences[SELECTED_LINES_KEY] = selectedLines }
+  }
+
   companion object {
     private val LATITUDE_KEY = doublePreferencesKey("camera_latitude")
     private val LONGITUDE_KEY = doublePreferencesKey("camera_longitude")
     private val ZOOM_KEY = doublePreferencesKey("camera_zoom")
+    private val SELECTED_LINES_KEY = stringSetPreferencesKey("selected_lines")
   }
 }
