@@ -17,6 +17,7 @@ import kotlin.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
@@ -46,6 +48,14 @@ class MapViewModel(
 
   private val cameraPositionChanges = MutableSharedFlow<MapCameraPosition>()
 
+  private val selectedLines: StateFlow<Set<String>?> =
+    preferencesRepository.selectedLines.stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.Eagerly,
+      initialValue = null,
+    )
+
+  private val _allVehicles = MutableStateFlow<List<Vehicle>>(emptyList())
   private val _vehicles = MutableStateFlow<List<Vehicle>>(emptyList())
   val vehicles: StateFlow<List<Vehicle>> = _vehicles.asStateFlow()
 
@@ -68,7 +78,12 @@ class MapViewModel(
 
   private val lifecycleObserver = LifecycleEventObserver { _, event ->
     when (event) {
-      Lifecycle.Event.ON_START -> startPeriodicFetch()
+      Lifecycle.Event.ON_START -> {
+        val lines = selectedLines.value
+        if (lines == null || lines.isNotEmpty()) {
+          startPeriodicFetch()
+        }
+      }
       Lifecycle.Event.ON_STOP -> {
         lastBackgroundTimeEpoch = Clock.System.now().toEpochMilliseconds()
         stopPeriodicFetch()
@@ -79,6 +94,22 @@ class MapViewModel(
 
   init {
     lifecycle.addObserver(lifecycleObserver)
+
+    selectedLines
+      .onEach { lines ->
+        if (lines != null && lines.isEmpty()) {
+          stopPeriodicFetch()
+          _allVehicles.value = emptyList()
+          _vehicles.value = emptyList()
+          wasExecuted = false
+        } else {
+          _vehicles.value = filterVehicles(_allVehicles.value, lines)
+          if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            startPeriodicFetch()
+          }
+        }
+      }
+      .launchIn(viewModelScope)
 
     cameraPositionChanges
       .mapLatest {
@@ -98,24 +129,21 @@ class MapViewModel(
   }
 
   private fun startPeriodicFetch() {
+    if (fetchJob?.isActive == true) return
+
     val backgroundTime = lastBackgroundTimeEpoch
     lastBackgroundTimeEpoch = 0L
 
     fetchJob = viewModelScope.launch {
       delay(
         when {
-          !wasExecuted -> {
-            0L
-          }
-          backgroundTime != 0L -> {
+          !wasExecuted -> 0L
+          backgroundTime != 0L ->
             maxOf(
               0L,
               MAX_FETCH_DELAY_MILLIS - (Clock.System.now().toEpochMilliseconds() - backgroundTime),
             )
-          }
-          else -> {
-            MAX_FETCH_DELAY_MILLIS
-          }
+          else -> MAX_FETCH_DELAY_MILLIS
         }
       )
 
@@ -132,8 +160,9 @@ class MapViewModel(
   }
 
   private suspend fun fetchVehicles() {
+    val coroutineContext = currentCoroutineContext()
     try {
-      _vehicles.value =
+      val vehicles =
         transportRepository.getVehicles().filter { vehicle ->
           calculateDistanceBetweenKm(
             lat1 = WARSAW_CENTER_LAT,
@@ -142,13 +171,18 @@ class MapViewModel(
             lon2 = vehicle.longitude,
           ) <= MAX_DISTANCE_KM
         }
+      _allVehicles.value = vehicles
+      _vehicles.value = filterVehicles(vehicles, selectedLines.value)
     } catch (ex: Exception) {
       if (ex is CancellationException) throw ex
       _errors.send(ex)
     } finally {
-      wasExecuted = true
+      if (coroutineContext.isActive) wasExecuted = true
     }
   }
+
+  private fun filterVehicles(vehicles: List<Vehicle>, lines: Set<String>?): List<Vehicle> =
+    if (lines == null) vehicles else vehicles.filter { lines.contains(it.lineNumber) }
 
   override fun onCleared() {
     lifecycle.removeObserver(lifecycleObserver)
