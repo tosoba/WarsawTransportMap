@@ -59,6 +59,9 @@ class MapViewModel(
   private val _vehicles = MutableStateFlow<List<Vehicle>>(emptyList())
   val vehicles: StateFlow<List<Vehicle>> = _vehicles.asStateFlow()
 
+  private val _isLoadingVehicles = MutableStateFlow(false)
+  val isLoadingVehicles: StateFlow<Boolean> = _isLoadingVehicles.asStateFlow()
+
   private val _errors = Channel<Throwable>(Channel.UNLIMITED)
   val errors = _errors.receiveAsFlow()
 
@@ -161,6 +164,7 @@ class MapViewModel(
 
   private suspend fun fetchVehicles() {
     val coroutineContext = currentCoroutineContext()
+    _isLoadingVehicles.value = true
     try {
       val vehicles =
         transportRepository.getVehicles().filter { vehicle ->
@@ -178,6 +182,7 @@ class MapViewModel(
       _errors.send(ex)
     } finally {
       if (coroutineContext.isActive) wasExecuted = true
+      _isLoadingVehicles.value = false
     }
   }
 

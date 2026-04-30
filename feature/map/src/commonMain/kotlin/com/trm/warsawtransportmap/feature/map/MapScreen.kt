@@ -1,17 +1,29 @@
 package com.trm.warsawtransportmap.feature.map
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterCenterFocus
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TwoRowsTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,9 +42,11 @@ import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.spatialk.geojson.Position
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -> Unit) {
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
+  val isLoadingVehicles by viewModel.isLoadingVehicles.collectAsStateWithLifecycle()
 
   val initialCameraPosition by
     viewModel.initialCameraPosition.collectAsStateWithLifecycle(initialValue = null)
@@ -75,9 +89,17 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     }
 
   Scaffold(
+    topBar = {
+      TwoRowsTopAppBar(
+        title = { Text(text = "WarsawTransportMap") },
+        subtitle = { Text(text = "Currently tracked vehicles: ${vehicles.size}") },
+        collapsedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+        expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+        windowInsets = WindowInsets(),
+      )
+    },
     floatingActionButton = {
       val scope = rememberCoroutineScope()
-
       Column(horizontalAlignment = Alignment.End) {
         AnimatedVisibility(visible = vehicles.isNotEmpty()) {
           SmallFloatingActionButton(
@@ -97,8 +119,15 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
           Icon(imageVector = Icons.Default.GridView, contentDescription = "Filter lines")
         }
       }
+    },
+  ) { paddingValues ->
+    Box(modifier = Modifier.padding(paddingValues)) {
+      Column {
+        AnimatedVisibility(visible = isLoadingVehicles, enter = fadeIn(), exit = fadeOut()) {
+          LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+        Map(cameraState = cameraState, vehicles = vehicles)
+      }
     }
-  ) {
-    Map(cameraState = cameraState, vehicles = vehicles)
   }
 }
