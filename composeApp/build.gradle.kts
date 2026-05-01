@@ -1,9 +1,14 @@
+import io.github.frankois944.spmForKmp.swiftPackageConfig
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.net.URI
+
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.androidKotlinMultiplatformLibrary)
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
   alias(libs.plugins.kotlinSerialization)
+  alias(libs.plugins.spmForKmp)
 }
 
 kotlin {
@@ -21,6 +26,7 @@ kotlin {
       baseName = "ComposeApp"
       isStatic = true
     }
+    iosTarget.configureSpmMaplibre(project)
   }
 
   sourceSets {
@@ -57,4 +63,28 @@ kotlin {
 
     commonTest.dependencies { implementation(libs.kotlin.test) }
   }
+}
+
+private fun KotlinNativeTarget.configureSpmMaplibre(project: Project) {
+  swiftPackageConfig {
+    dependency {
+      remotePackageVersion(
+        url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
+        products = { add("MapLibre", exportToKotlin = true) },
+        packageName = "maplibre-gl-native-distribution",
+        version = project.properties["maplibreIosVersion"]!!.toString(),
+      )
+    }
+  }
+
+  val variant =
+    when (targetName) {
+      "iosArm64" -> "arm64-apple-ios"
+      "iosSimulatorArm64" -> "arm64-apple-ios-simulator"
+      "iosX64" -> "x86_64-apple-ios-simulator"
+      else -> error("Unrecognized target: $targetName")
+    }
+  val rpath =
+    "${project.layout.buildDirectory.get()}/spmKmpPlugin/$targetName/scratch/$variant/release/"
+  binaries.all { linkerOpts("-F$rpath", "-rpath", rpath) }
 }

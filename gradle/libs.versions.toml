@@ -20,6 +20,7 @@ okio = "3.17.0"
 maplibre = "0.12.1"
 material3 = "1.11.0-alpha07"
 navigation3 = "1.1.0"
+spmForKmp = "1.9.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -64,3 +65,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+spmForKmp = { id = "io.github.frankois944.spmForKmp", version.ref = "spmForKmp" }
