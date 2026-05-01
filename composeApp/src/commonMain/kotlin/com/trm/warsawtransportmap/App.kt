@@ -1,6 +1,5 @@
 package com.trm.warsawtransportmap
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -51,7 +50,7 @@ fun App() {
           },
         MapNavKey,
       )
-    MaterialTheme {
+    AppTheme {
       NavDisplay(
         backStack = backStack,
         entryProvider =
