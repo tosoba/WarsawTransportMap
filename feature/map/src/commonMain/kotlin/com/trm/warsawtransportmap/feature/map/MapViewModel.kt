@@ -39,7 +39,6 @@ class MapViewModel(
   private val lifecycle: Lifecycle,
   private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-
   val initialCameraPosition: StateFlow<CameraPosition?> =
     preferencesRepository.cameraPosition.stateIn(
       scope = viewModelScope,
@@ -59,7 +58,6 @@ class MapViewModel(
   private val _allVehicles = MutableStateFlow<List<Vehicle>>(emptyList())
 
   private val vehicleAnimator = MapAnimatedVehiclePositions(viewModelScope)
-
   val vehicles: StateFlow<List<Vehicle>> = vehicleAnimator.displayed
 
   private val _isLoadingVehicles = MutableStateFlow(false)
@@ -69,6 +67,8 @@ class MapViewModel(
   val errors = _errors.receiveAsFlow()
 
   private var fetchJob: Job? = null
+
+  private var lastFetchCompletedEpoch: Long = 0L
 
   private var lastBackgroundTimeEpoch: Long
     get() = savedStateHandle[KEY_LAST_BACKGROUND_TIME_EPOCH] ?: 0L
@@ -109,7 +109,11 @@ class MapViewModel(
           vehicleAnimator.clear()
           wasExecuted = false
         } else {
-          vehicleAnimator.update(filterVehicles(_allVehicles.value, lines))
+          val timeSinceLastFetch =
+            Clock.System.now().toEpochMilliseconds() - lastFetchCompletedEpoch
+          if (timeSinceLastFetch > MapAnimatedVehiclePositions.ANIM_DURATION_MS) {
+            vehicleAnimator.update(filterVehicles(_allVehicles.value, lines))
+          }
           if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             startPeriodicFetch()
           }
@@ -181,6 +185,7 @@ class MapViewModel(
 
       _allVehicles.value = vehicles
       vehicleAnimator.update(filterVehicles(vehicles, selectedLines.value))
+      lastFetchCompletedEpoch = Clock.System.now().toEpochMilliseconds()
     } catch (ex: Exception) {
       if (ex is CancellationException) throw ex
       _errors.send(ex)
@@ -201,7 +206,7 @@ class MapViewModel(
   }
 
   companion object {
-    private const val MAX_FETCH_DELAY_MILLIS = 30_000L
+    internal const val MAX_FETCH_DELAY_MILLIS = 30_000L
 
     private const val KEY_WAS_EXECUTED = "KEY_WAS_EXECUTED"
     private const val KEY_LAST_BACKGROUND_TIME_EPOCH = "KEY_LAST_BACKGROUND_TIME_EPOCH"

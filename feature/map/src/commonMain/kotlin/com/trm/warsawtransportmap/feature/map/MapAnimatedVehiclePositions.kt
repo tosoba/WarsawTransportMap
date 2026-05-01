@@ -1,5 +1,6 @@
 package com.trm.warsawtransportmap.feature.map
 
+import com.trm.warsawtransportmap.core.common.extensions.calculateDistanceBetweenKm
 import com.trm.warsawtransportmap.core.model.Vehicle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.concurrent.Volatile
 import kotlin.time.Clock
 
 internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
@@ -21,7 +23,7 @@ internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
     val startMs: Long,
   )
 
-  private val animations = mutableMapOf<String, VehicleAnimation>()
+  @Volatile private var animations: Map<String, VehicleAnimation> = emptyMap()
 
   private val _displayed = MutableStateFlow<List<Vehicle>>(emptyList())
   val displayed: StateFlow<List<Vehicle>> = _displayed.asStateFlow()
@@ -35,16 +37,30 @@ internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
     }
 
     val now = Clock.System.now().toEpochMilliseconds()
-    val currentById = _displayed.value.associateBy(Vehicle::vehicleNumber)
+    val currentById = _displayed.value.associateBy { it.vehicleNumber }
 
-    animations.clear()
-    newVehicles.forEach { vehicle ->
+    animations = newVehicles.associate { vehicle ->
       val current = currentById[vehicle.vehicleNumber]
-      animations[vehicle.vehicleNumber] =
+
+      val distanceKm =
+        if (current != null) {
+          calculateDistanceBetweenKm(
+            lat1 = current.latitude,
+            lon1 = current.longitude,
+            lat2 = vehicle.latitude,
+            lon2 = vehicle.longitude,
+          )
+        } else {
+          0.0
+        }
+
+      val snap = distanceKm > MAX_ANIMATE_DISTANCE_KM
+
+      vehicle.vehicleNumber to
         VehicleAnimation(
           vehicle = vehicle,
-          fromLat = current?.latitude ?: vehicle.latitude,
-          fromLon = current?.longitude ?: vehicle.longitude,
+          fromLat = if (snap) vehicle.latitude else current?.latitude ?: vehicle.latitude,
+          fromLon = if (snap) vehicle.longitude else current?.longitude ?: vehicle.longitude,
           toLat = vehicle.latitude,
           toLon = vehicle.longitude,
           startMs = now,
@@ -57,7 +73,7 @@ internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
   fun clear() {
     renderJob?.cancel()
     renderJob = null
-    animations.clear()
+    animations = emptyMap()
     _displayed.value = emptyList()
   }
 
@@ -67,9 +83,9 @@ internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
       while (isActive) {
         val now = Clock.System.now().toEpochMilliseconds()
         var allSettled = true
-
+        val snapshot = animations
         _displayed.value =
-          animations.values.map { anim ->
+          snapshot.values.map { anim ->
             val t = ((now - anim.startMs).toFloat() / ANIM_DURATION_MS).coerceIn(0f, 1f)
             if (t < 1f) allSettled = false
             val easedT = smoothStep(t).toDouble()
@@ -90,8 +106,10 @@ internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
   private fun smoothStep(t: Float): Float = t * t * (3f - 2f * t)
 
   companion object {
-    private const val ANIM_DURATION_MS = 1_000L
+    internal const val ANIM_DURATION_MS = 2_000L
 
     private const val FRAME_DELAY_MS = 16L
+
+    private const val MAX_ANIMATE_DISTANCE_KM = 1.0
   }
 }
