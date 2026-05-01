@@ -88,7 +88,8 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
               Position(
                 latitude = MapConstants.WARSAW_CENTER_LAT,
                 longitude = MapConstants.WARSAW_CENTER_LON,
-              )
+              ),
+            zoom = MapConstants.DEFAULT_ZOOM,
           )
         }
     )
