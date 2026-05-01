@@ -52,6 +52,8 @@ import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -> Unit) {
+  val scope = rememberCoroutineScope()
+
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
   val isLoadingVehicles by viewModel.isLoadingVehicles.collectAsStateWithLifecycle()
 
@@ -67,14 +69,13 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     )
   }
   val cameraState = rememberCameraState(firstPosition = firstPosition)
+  val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
 
   LaunchedEffect(cameraState.isCameraMoving) {
     if (!cameraState.isCameraMoving) {
       viewModel.onCameraPositionChange(cameraState.position)
     }
   }
-
-  val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
 
   initialCameraPosition?.let {
     LaunchedEffect(Unit) {
@@ -110,7 +111,6 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
       )
     },
     floatingActionButton = {
-      val scope = rememberCoroutineScope()
       Column(horizontalAlignment = Alignment.End) {
         AnimatedVisibility(visible = vehicles.isNotEmpty()) {
           SmallFloatingActionButton(
@@ -136,11 +136,10 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     },
   ) { paddingValues ->
     Box(modifier = Modifier.padding(paddingValues)) {
-      Column {
-        AnimatedVisibility(visible = isLoadingVehicles, enter = fadeIn(), exit = fadeOut()) {
-          LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
-        Map(cameraState = cameraState, vehicles = vehicles)
+      Map(cameraState = cameraState, vehicles = vehicles)
+
+      AnimatedVisibility(visible = isLoadingVehicles, enter = fadeIn(), exit = fadeOut()) {
+        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
       }
     }
   }
