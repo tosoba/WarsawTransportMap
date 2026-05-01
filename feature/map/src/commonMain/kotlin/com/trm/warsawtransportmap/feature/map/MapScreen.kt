@@ -36,11 +36,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.MapCameraAnimateToBoundingBoxEffect
 import com.trm.warsawtransportmap.core.common.extensions.rememberMapVehiclesBoundingBox
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.spatialk.geojson.Position
+import warsawtransportmap.feature.map.generated.resources.Res
+import warsawtransportmap.feature.map.generated.resources.app_name
+import warsawtransportmap.feature.map.generated.resources.center_map_content_description
+import warsawtransportmap.feature.map.generated.resources.filter_lines_content_description
+import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -91,8 +98,12 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
   Scaffold(
     topBar = {
       TwoRowsTopAppBar(
-        title = { Text(text = "WarsawTransportMap") },
-        subtitle = { Text(text = "Currently tracked vehicles: ${vehicles.size}") },
+        title = { Text(text = stringResource(Res.string.app_name)) },
+        subtitle = {
+          Text(
+            text = pluralStringResource(Res.plurals.tracking_vehicles, vehicles.size, vehicles.size)
+          )
+        },
         collapsedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
         expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
         windowInsets = WindowInsets(),
@@ -108,7 +119,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
           ) {
             Icon(
               imageVector = Icons.Default.FilterCenterFocus,
-              contentDescription = "Center map to show all vehicles",
+              contentDescription = stringResource(Res.string.center_map_content_description),
             )
           }
         }
@@ -116,7 +127,10 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
         Spacer(modifier = Modifier.height(16.dp))
 
         FloatingActionButton(onClick = onNavigateToLines) {
-          Icon(imageVector = Icons.Default.GridView, contentDescription = "Filter lines")
+          Icon(
+            imageVector = Icons.Default.GridView,
+            contentDescription = stringResource(Res.string.filter_lines_content_description),
+          )
         }
       }
     },

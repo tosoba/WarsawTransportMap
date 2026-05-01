@@ -50,7 +50,16 @@ import androidx.compose.ui.unit.dp
 import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.model.Line
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import warsawtransportmap.feature.lines.generated.resources.Res
+import warsawtransportmap.feature.lines.generated.resources.back_content_description
+import warsawtransportmap.feature.lines.generated.resources.clear_content_description
+import warsawtransportmap.feature.lines.generated.resources.deselect_all_content_description
+import warsawtransportmap.feature.lines.generated.resources.retry_button
+import warsawtransportmap.feature.lines.generated.resources.search_lines_placeholder
+import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
+import warsawtransportmap.feature.lines.generated.resources.unknown_error
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -79,12 +88,15 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
             colors = appBarWithSearchColors.searchBarColors.inputFieldColors,
             enabled = state is Loadable.Loaded,
             onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
-            placeholder = { Text(text = "Search lines") },
+            placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
               AnimatedVisibility(textFieldState.text.isNotEmpty()) {
                 IconButton(onClick = { textFieldState.clearText() }) {
-                  Icon(Icons.Default.Close, contentDescription = "Clear")
+                  Icon(
+                    Icons.Default.Close,
+                    contentDescription = stringResource(Res.string.clear_content_description),
+                  )
                 }
               }
             },
@@ -93,7 +105,10 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
         },
         navigationIcon = {
           IconButton(onClick = onBackClick) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            Icon(
+              Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = stringResource(Res.string.back_content_description),
+            )
           }
         },
         actions = {
@@ -102,7 +117,12 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
           IconButton(enabled = state is Loadable.Loaded, onClick = viewModel::toggleAll) {
             Icon(
               imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
-              contentDescription = if (allSelected) "Deselect all" else "Select all",
+              contentDescription =
+                if (allSelected) {
+                  stringResource(Res.string.deselect_all_content_description)
+                } else {
+                  stringResource(Res.string.select_all_content_description)
+                },
             )
           }
         },
@@ -143,11 +163,11 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
           Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
               Text(
-                text = loadableState.message ?: "Unknown error",
+                text = loadableState.message ?: stringResource(Res.string.unknown_error),
                 color = MaterialTheme.colorScheme.onBackground,
               )
               Button(onClick = viewModel::loadLines, modifier = Modifier.padding(top = 16.dp)) {
-                Text("Retry")
+                Text(text = stringResource(Res.string.retry_button))
               }
             }
           }

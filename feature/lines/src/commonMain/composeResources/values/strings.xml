@@ -1,0 +1,9 @@
+<resources>
+    <string name="search_lines_placeholder">Search lines</string>
+    <string name="clear_content_description">Clear</string>
+    <string name="back_content_description">Back</string>
+    <string name="deselect_all_content_description">Deselect all</string>
+    <string name="select_all_content_description">Select all</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="retry_button">Retry</string>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">WarsawTransportMap</string>
+    <plurals name="tracking_vehicles">
+        <item quantity="one">Tracking %1$d vehicle</item>
+        <item quantity="other">Tracking %1$d vehicles</item>
+    </plurals>
+    <string name="center_map_content_description">Center map to show all vehicles</string>
+    <string name="filter_lines_content_description">Filter lines</string>
+</resources>
