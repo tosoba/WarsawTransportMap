@@ -7,4 +7,7 @@
     <string name="center_map_content_description">Center map to show all vehicles</string>
     <string name="filter_lines_content_description">Filter lines</string>
     <string name="select_lines">Select lines</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_http">Server error occurred (%1$d).</string>
+    <string name="error_unknown">An unexpected error occurred.</string>
 </resources>

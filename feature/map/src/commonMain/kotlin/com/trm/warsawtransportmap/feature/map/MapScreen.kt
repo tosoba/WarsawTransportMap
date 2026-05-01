@@ -21,6 +21,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TwoRowsTopAppBar
@@ -35,7 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.MapCameraAnimateToBoundingBoxEffect
 import com.trm.warsawtransportmap.core.common.extensions.rememberMapVehiclesBoundingBox
+import io.ktor.client.plugins.ResponseException
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.io.IOException
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -46,6 +52,9 @@ import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
 import warsawtransportmap.feature.map.generated.resources.app_name
 import warsawtransportmap.feature.map.generated.resources.center_map_content_description
+import warsawtransportmap.feature.map.generated.resources.error_http
+import warsawtransportmap.feature.map.generated.resources.error_network
+import warsawtransportmap.feature.map.generated.resources.error_unknown
 import warsawtransportmap.feature.map.generated.resources.filter_lines_content_description
 import warsawtransportmap.feature.map.generated.resources.select_lines
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
@@ -54,6 +63,7 @@ import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -> Unit) {
   val scope = rememberCoroutineScope()
+  val snackbarHostState = remember(::SnackbarHostState)
 
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
   val isLoadingVehicles by viewModel.isLoadingVehicles.collectAsStateWithLifecycle()
@@ -97,6 +107,12 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
       }
     }
 
+  LaunchedEffect(Unit) {
+    viewModel.errors.collectLatest { error ->
+      snackbarHostState.showSnackbar(message = error.toErrorMessage())
+    }
+  }
+
   Scaffold(
     topBar = {
       TwoRowsTopAppBar(
@@ -111,6 +127,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
         windowInsets = WindowInsets(),
       )
     },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     floatingActionButton = {
       Column(horizontalAlignment = Alignment.End) {
         AnimatedVisibility(visible = vehicles.isNotEmpty()) {
@@ -149,3 +166,10 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     }
   }
 }
+
+private suspend fun Throwable.toErrorMessage(): String =
+  when (this) {
+    is IOException -> getString(Res.string.error_network)
+    is ResponseException -> getString(Res.string.error_http, response.status.value)
+    else -> getString(Res.string.error_unknown)
+  }

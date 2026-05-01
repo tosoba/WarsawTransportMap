@@ -40,6 +40,8 @@ kotlin {
 
       implementation(libs.kotlinx.datetime)
 
+      implementation(libs.ktor.client.core)
+
       implementation(libs.maplibre.compose)
     }
   }
