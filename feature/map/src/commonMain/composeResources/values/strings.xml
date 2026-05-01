@@ -1,13 +1,22 @@
 <resources>
     <string name="app_name">WarsawTransportMap</string>
     <plurals name="tracking_vehicles">
-        <item quantity="one">Tracking %1$d vehicle</item>
-        <item quantity="other">Tracking %1$d vehicles</item>
+        <item quantity="one">Tracking %1$d vehicle.</item>
+        <item quantity="other">Tracking %1$d vehicles.</item>
     </plurals>
-    <string name="center_map_content_description">Center map to show all vehicles</string>
+    <string name="center_map_content_description">Center the map to show all vehicles</string>
     <string name="filter_lines_content_description">Filter lines</string>
     <string name="select_lines">Select lines</string>
     <string name="error_network">Network error. Please check your connection.</string>
     <string name="error_http">Server error occurred (%1$d).</string>
     <string name="error_unknown">An unexpected error occurred.</string>
+    <plurals name="vehicle_updated_minutes_ago">
+        <item quantity="one">Updated %1$d minute ago</item>
+        <item quantity="other">Updated %1$d minutes ago</item>
+    </plurals>
+    <plurals name="vehicle_updated_seconds_ago">
+        <item quantity="one">Updated %1$d second ago</item>
+        <item quantity="other">Updated %1$d seconds ago</item>
+    </plurals>
+    <string name="vehicle_updated_now">Updated just now.</string>
 </resources>

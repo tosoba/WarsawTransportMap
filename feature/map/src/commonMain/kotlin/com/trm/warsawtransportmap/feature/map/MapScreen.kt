@@ -16,11 +16,11 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -37,10 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.MapCameraAnimateToBoundingBoxEffect
 import com.trm.warsawtransportmap.core.common.extensions.rememberMapVehiclesBoundingBox
+import com.trm.warsawtransportmap.core.model.Vehicle
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.io.IOException
+import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -58,6 +63,10 @@ import warsawtransportmap.feature.map.generated.resources.error_unknown
 import warsawtransportmap.feature.map.generated.resources.filter_lines_content_description
 import warsawtransportmap.feature.map.generated.resources.select_lines
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
+import warsawtransportmap.feature.map.generated.resources.vehicle_updated_minutes_ago
+import warsawtransportmap.feature.map.generated.resources.vehicle_updated_now
+import warsawtransportmap.feature.map.generated.resources.vehicle_updated_seconds_ago
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -70,16 +79,19 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
 
   val initialCameraPosition by
     viewModel.initialCameraPosition.collectAsStateWithLifecycle(initialValue = null)
-  val firstPosition = remember {
-    CameraPosition(
-      target =
-        Position(
-          latitude = MapConstants.WARSAW_CENTER_LAT,
-          longitude = MapConstants.WARSAW_CENTER_LON,
-        )
+  val cameraState =
+    rememberCameraState(
+      firstPosition =
+        remember {
+          CameraPosition(
+            target =
+              Position(
+                latitude = MapConstants.WARSAW_CENTER_LAT,
+                longitude = MapConstants.WARSAW_CENTER_LON,
+              )
+          )
+        }
     )
-  }
-  val cameraState = rememberCameraState(firstPosition = firstPosition)
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
 
   LaunchedEffect(cameraState.isCameraMoving) {
@@ -109,6 +121,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
 
   LaunchedEffect(Unit) {
     viewModel.errors.collectLatest { error ->
+      snackbarHostState.currentSnackbarData?.dismiss()
       snackbarHostState.showSnackbar(message = error.toErrorMessage())
     }
   }
@@ -131,7 +144,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     floatingActionButton = {
       Column(horizontalAlignment = Alignment.End) {
         AnimatedVisibility(visible = vehicles.isNotEmpty()) {
-          SmallFloatingActionButton(
+          FloatingActionButton(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             onClick = { boundingBox?.let { scope.launch { cameraState.animateTo(it) } } },
           ) {
@@ -158,7 +171,17 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     },
   ) { paddingValues ->
     Box(modifier = Modifier.padding(paddingValues)) {
-      Map(cameraState = cameraState, vehicles = vehicles)
+      Map(
+        cameraState = cameraState,
+        vehicles = vehicles,
+        onVehicleClick = { vehicle ->
+          scope.launch {
+            val message = vehicle.toUpdateTimeMessage() ?: return@launch
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(message = message)
+          }
+        },
+      )
 
       AnimatedVisibility(visible = isLoadingVehicles, enter = fadeIn(), exit = fadeOut()) {
         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -173,3 +196,30 @@ private suspend fun Throwable.toErrorMessage(): String =
     is ResponseException -> getString(Res.string.error_http, response.status.value)
     else -> getString(Res.string.error_unknown)
   }
+
+private suspend fun Vehicle.toUpdateTimeMessage(): String? =
+  runCatching {
+      val duration =
+        Clock.System.now() -
+          LocalDateTime.parse(time.replace(" ", "T")).toInstant(TimeZone.currentSystemDefault())
+      when {
+        duration.inWholeMinutes > 0 -> {
+          getPluralString(
+            Res.plurals.vehicle_updated_minutes_ago,
+            duration.inWholeMinutes.toInt(),
+            duration.inWholeMinutes,
+          )
+        }
+        duration.inWholeSeconds > 10 -> {
+          getPluralString(
+            Res.plurals.vehicle_updated_seconds_ago,
+            duration.inWholeSeconds.toInt(),
+            duration.inWholeSeconds,
+          )
+        }
+        else -> {
+          getString(Res.string.vehicle_updated_now)
+        }
+      }
+    }
+    .getOrNull()

@@ -8,7 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trm.warsawtransportmap.core.model.Vehicle
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.expressions.dsl.asNumber
 import org.maplibre.compose.expressions.dsl.asString
@@ -26,6 +28,7 @@ import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
+import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
@@ -33,7 +36,11 @@ import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
 
 @Composable
-internal fun Map(cameraState: CameraState, vehicles: List<Vehicle>) {
+internal fun Map(
+  cameraState: CameraState,
+  vehicles: List<Vehicle>,
+  onVehicleClick: (Vehicle) -> Unit,
+) {
   MaplibreMap(
     modifier = Modifier.fillMaxSize(),
     baseStyle =
@@ -112,6 +119,12 @@ internal fun Map(cameraState: CameraState, vehicles: List<Vehicle>) {
       radius = const(16.dp),
       strokeColor = const(MaterialTheme.colorScheme.onSurfaceVariant),
       strokeWidth = const(1.dp),
+      onClick = { features ->
+        features.firstOrNull()?.properties?.let { properties ->
+          runCatching { onVehicleClick(Json.decodeFromJsonElement<Vehicle>(properties)) }
+        }
+        ClickResult.Consume
+      },
     )
 
     SymbolLayer(
