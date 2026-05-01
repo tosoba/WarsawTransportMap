@@ -12,8 +12,6 @@ import com.trm.warsawtransportmap.core.model.CameraPosition
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LAT
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LON
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -31,6 +29,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Clock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModel(
@@ -39,6 +39,7 @@ class MapViewModel(
   private val lifecycle: Lifecycle,
   private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
   val initialCameraPosition: StateFlow<CameraPosition?> =
     preferencesRepository.cameraPosition.stateIn(
       scope = viewModelScope,
@@ -56,8 +57,10 @@ class MapViewModel(
     )
 
   private val _allVehicles = MutableStateFlow<List<Vehicle>>(emptyList())
-  private val _vehicles = MutableStateFlow<List<Vehicle>>(emptyList())
-  val vehicles: StateFlow<List<Vehicle>> = _vehicles.asStateFlow()
+
+  private val vehicleAnimator = MapAnimatedVehiclePositions(viewModelScope)
+
+  val vehicles: StateFlow<List<Vehicle>> = vehicleAnimator.displayed
 
   private val _isLoadingVehicles = MutableStateFlow(false)
   val isLoadingVehicles: StateFlow<Boolean> = _isLoadingVehicles.asStateFlow()
@@ -103,10 +106,10 @@ class MapViewModel(
         if (lines != null && lines.isEmpty()) {
           stopPeriodicFetch()
           _allVehicles.value = emptyList()
-          _vehicles.value = emptyList()
+          vehicleAnimator.clear()
           wasExecuted = false
         } else {
-          _vehicles.value = filterVehicles(_allVehicles.value, lines)
+          vehicleAnimator.update(filterVehicles(_allVehicles.value, lines))
           if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             startPeriodicFetch()
           }
@@ -175,8 +178,9 @@ class MapViewModel(
             lon2 = vehicle.longitude,
           ) <= MAX_DISTANCE_KM
         }
+
       _allVehicles.value = vehicles
-      _vehicles.value = filterVehicles(vehicles, selectedLines.value)
+      vehicleAnimator.update(filterVehicles(vehicles, selectedLines.value))
     } catch (ex: Exception) {
       if (ex is CancellationException) throw ex
       _errors.send(ex)
@@ -192,6 +196,7 @@ class MapViewModel(
   override fun onCleared() {
     lifecycle.removeObserver(lifecycleObserver)
     stopPeriodicFetch()
+    vehicleAnimator.clear()
     super.onCleared()
   }
 
