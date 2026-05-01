@@ -26,7 +26,6 @@ import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
-import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
@@ -50,22 +49,20 @@ internal fun Map(cameraState: CameraState, vehicles: List<Vehicle>) {
   ) {
     if (vehicles.isEmpty()) return@MaplibreMap
 
-    val geoJsonData =
-      GeoJsonData.Features(
-        FeatureCollection(
-          vehicles.map { vehicle ->
-            Feature(
-              id = JsonPrimitive(vehicle.vehicleNumber),
-              geometry = Point(Position(vehicle.longitude, vehicle.latitude)),
-              properties = vehicle,
-            )
-          }
-        )
-      )
-
     val markersSource =
       rememberGeoJsonSource(
-        data = geoJsonData,
+        data =
+          GeoJsonData.Features(
+            FeatureCollection(
+              vehicles.map { vehicle ->
+                Feature(
+                  id = JsonPrimitive(vehicle.vehicleNumber),
+                  geometry = Point(Position(vehicle.longitude, vehicle.latitude)),
+                  properties = vehicle,
+                )
+              }
+            )
+          ),
         options = GeoJsonOptions(cluster = true, clusterRadius = 50, clusterMaxZoom = 14),
       )
 
@@ -88,7 +85,6 @@ internal fun Map(cameraState: CameraState, vehicles: List<Vehicle>) {
           50 to const(32.dp),
           100 to const(40.dp),
         ),
-      onClick = { features -> ClickResult.Consume },
     )
 
     SymbolLayer(
