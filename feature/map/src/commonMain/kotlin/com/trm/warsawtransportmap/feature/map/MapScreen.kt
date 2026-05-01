@@ -15,7 +15,7 @@ import androidx.compose.material.icons.filled.FilterCenterFocus
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +47,7 @@ import warsawtransportmap.feature.map.generated.resources.Res
 import warsawtransportmap.feature.map.generated.resources.app_name
 import warsawtransportmap.feature.map.generated.resources.center_map_content_description
 import warsawtransportmap.feature.map.generated.resources.filter_lines_content_description
+import warsawtransportmap.feature.map.generated.resources.select_lines
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -126,12 +127,16 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        FloatingActionButton(onClick = onNavigateToLines) {
-          Icon(
-            imageVector = Icons.Default.GridView,
-            contentDescription = stringResource(Res.string.filter_lines_content_description),
-          )
-        }
+        ExtendedFloatingActionButton(
+          onClick = onNavigateToLines,
+          icon = {
+            Icon(
+              imageVector = Icons.Default.GridView,
+              contentDescription = stringResource(Res.string.filter_lines_content_description),
+            )
+          },
+          text = { Text(stringResource(Res.string.select_lines)) },
+        )
       }
     },
   ) { paddingValues ->

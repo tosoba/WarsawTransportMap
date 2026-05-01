@@ -6,4 +6,5 @@
     </plurals>
     <string name="center_map_content_description">Center map to show all vehicles</string>
     <string name="filter_lines_content_description">Filter lines</string>
+    <string name="select_lines">Select lines</string>
 </resources>
