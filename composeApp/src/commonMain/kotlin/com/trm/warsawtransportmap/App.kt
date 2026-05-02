@@ -1,7 +1,6 @@
 package com.trm.warsawtransportmap
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -22,7 +21,6 @@ import org.koin.compose.KoinApplication
 import org.koin.dsl.KoinConfiguration
 
 @Composable
-@Preview
 fun App() {
   KoinApplication(
     configuration =

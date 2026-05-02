@@ -89,12 +89,12 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
             enabled = state is Loadable.Loaded,
             onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
             placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
-              AnimatedVisibility(textFieldState.text.isNotEmpty()) {
-                IconButton(onClick = { textFieldState.clearText() }) {
+              AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
+                IconButton(onClick = textFieldState::clearText) {
                   Icon(
-                    Icons.Default.Close,
+                    imageVector = Icons.Default.Close,
                     contentDescription = stringResource(Res.string.clear_content_description),
                   )
                 }
@@ -106,7 +106,7 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
         navigationIcon = {
           IconButton(onClick = onBackClick) {
             Icon(
-              Icons.AutoMirrored.Filled.ArrowBack,
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
               contentDescription = stringResource(Res.string.back_content_description),
             )
           }
@@ -118,11 +118,10 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
             Icon(
               imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
               contentDescription =
-                if (allSelected) {
-                  stringResource(Res.string.deselect_all_content_description)
-                } else {
-                  stringResource(Res.string.select_all_content_description)
-                },
+                stringResource(
+                  if (allSelected) Res.string.deselect_all_content_description
+                  else Res.string.select_all_content_description
+                ),
             )
           }
         },
