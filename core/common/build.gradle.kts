@@ -10,6 +10,7 @@ kotlin {
     namespace = "com.trm.warsawtransportmap.core.common"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     minSdk = libs.versions.android.minSdk.get().toInt()
+    androidResources { enable = true }
   }
 
   iosArm64()
@@ -34,4 +35,8 @@ kotlin {
       implementation(libs.maplibre.compose)
     }
   }
+}
+
+compose.resources {
+  publicResClass = true
 }
