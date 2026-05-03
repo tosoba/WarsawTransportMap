@@ -15,10 +15,15 @@ val localProperties =
     }
   }
 
+val umApiKey = 
+  project.findProperty("UM_API_KEY")?.toString()
+    ?: System.getenv("UM_API_KEY")
+    ?: localProperties.getProperty("UM_API_KEY").orEmpty()
+
 buildConfig {
   useKotlinOutput { topLevelConstants = true }
   packageName("com.trm.warsawtransportmap.core.network")
-  buildConfigField("UM_API_KEY", localProperties.getProperty("UM_API_KEY").orEmpty())
+  buildConfigField("UM_API_KEY", umApiKey)
 }
 
 kotlin {
