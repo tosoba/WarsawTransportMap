@@ -23,10 +23,13 @@ kotlin {
 
       implementation(libs.androidx.lifecycle.runtime)
 
+      implementation(libs.compose.components.resources)
       implementation(libs.compose.foundation)
       implementation(libs.compose.runtime)
 
       implementation(libs.koin.core)
+
+      implementation(libs.ktor.client.core)
 
       implementation(libs.maplibre.compose)
     }

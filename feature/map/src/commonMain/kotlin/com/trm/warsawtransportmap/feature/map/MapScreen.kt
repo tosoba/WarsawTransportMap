@@ -37,14 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.MapCameraAnimateToBoundingBoxEffect
 import com.trm.warsawtransportmap.core.common.extensions.rememberMapVehiclesBoundingBox
+import com.trm.warsawtransportmap.core.common.extensions.toErrorMessage
 import com.trm.warsawtransportmap.core.model.Vehicle
-import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
-import kotlinx.io.IOException
 import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.pluralStringResource
@@ -57,9 +56,6 @@ import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
 import warsawtransportmap.feature.map.generated.resources.app_name
 import warsawtransportmap.feature.map.generated.resources.center_map_content_description
-import warsawtransportmap.feature.map.generated.resources.error_http
-import warsawtransportmap.feature.map.generated.resources.error_network
-import warsawtransportmap.feature.map.generated.resources.error_unknown
 import warsawtransportmap.feature.map.generated.resources.filter_lines_content_description
 import warsawtransportmap.feature.map.generated.resources.select_lines
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
@@ -190,13 +186,6 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     }
   }
 }
-
-private suspend fun Throwable.toErrorMessage(): String =
-  when (this) {
-    is IOException -> getString(Res.string.error_network)
-    is ResponseException -> getString(Res.string.error_http, response.status.value)
-    else -> getString(Res.string.error_unknown)
-  }
 
 private suspend fun Vehicle.toUpdateTimeMessage(): String? =
   runCatching {

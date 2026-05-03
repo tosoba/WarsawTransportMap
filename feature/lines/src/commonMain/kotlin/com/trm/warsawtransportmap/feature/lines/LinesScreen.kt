@@ -41,12 +41,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberContainedSearchBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.trm.warsawtransportmap.core.common.extensions.toErrorMessage
 import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.model.Line
 import kotlinx.coroutines.launch
@@ -59,7 +62,6 @@ import warsawtransportmap.feature.lines.generated.resources.deselect_all_content
 import warsawtransportmap.feature.lines.generated.resources.retry_button
 import warsawtransportmap.feature.lines.generated.resources.search_lines_placeholder
 import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
-import warsawtransportmap.feature.lines.generated.resources.unknown_error
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -159,12 +161,14 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
           )
         }
         is Loadable.Error -> {
+          val errorMessage by
+            produceState<String?>(initialValue = null, key1 = loadableState) {
+              value = loadableState.throwable.toErrorMessage()
+            }
           Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-              Text(
-                text = loadableState.message ?: stringResource(Res.string.unknown_error),
-                color = MaterialTheme.colorScheme.onBackground,
-              )
+              Text(text = errorMessage.orEmpty(), color = MaterialTheme.colorScheme.onBackground)
+
               Button(onClick = viewModel::loadLines, modifier = Modifier.padding(top = 16.dp)) {
                 Text(text = stringResource(Res.string.retry_button))
               }

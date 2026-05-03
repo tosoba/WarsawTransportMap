@@ -7,9 +7,6 @@
     <string name="center_map_content_description">Center the map to show all vehicles</string>
     <string name="filter_lines_content_description">Filter lines</string>
     <string name="select_lines">Select lines</string>
-    <string name="error_network">Network error. Please check your connection.</string>
-    <string name="error_http">Server error occurred (%1$d).</string>
-    <string name="error_unknown">An unexpected error occurred.</string>
     <plurals name="vehicle_updated_minutes_ago">
         <item quantity="one">Updated %1$d minute ago</item>
         <item quantity="other">Updated %1$d minutes ago</item>

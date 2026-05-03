@@ -1,0 +1,5 @@
+<resources>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_http">Server error occurred (%1$d).</string>
+    <string name="error_unknown">An unexpected error occurred.</string>
+</resources>

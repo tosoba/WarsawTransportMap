@@ -50,7 +50,7 @@ class LinesViewModel(
           )
       } catch (ex: Exception) {
         ensureActive()
-        state = Loadable.Error(ex.message)
+        state = Loadable.Error(ex)
       }
     }
   }
