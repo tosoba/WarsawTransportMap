@@ -165,7 +165,10 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
             produceState<String?>(initialValue = null, key1 = loadableState) {
               value = loadableState.throwable.toErrorMessage()
             }
-          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+          Box(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            contentAlignment = Alignment.Center,
+          ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
               Text(text = errorMessage.orEmpty(), color = MaterialTheme.colorScheme.onBackground)
 
