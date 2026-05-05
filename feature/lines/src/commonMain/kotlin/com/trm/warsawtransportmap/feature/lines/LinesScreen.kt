@@ -75,13 +75,13 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
         inputField = {
           SearchBarDefaults.InputField(
             state = textFieldState,
-            onSearch = { expanded = false },
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
+            onSearch = {},
+            expanded = false,
+            onExpandedChange = {},
             enabled = state is Loadable.Loaded,
             placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
             leadingIcon = {
-              IconButton(onClick = { if (expanded) expanded = false else onBackClick() }) {
+              IconButton(onClick = onBackClick) {
                 Icon(
                   imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                   contentDescription = stringResource(Res.string.back_content_description),
@@ -123,14 +123,7 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
               horizontal = if (expanded) 0.dp else 16.dp,
               vertical = if (expanded) 0.dp else 8.dp,
             ),
-      ) {
-        LinesScreenContent(
-          state = state,
-          textFieldState = textFieldState,
-          viewModel = viewModel,
-          modifier = Modifier.fillMaxSize(),
-        )
-      }
+      ) {}
     }
   ) { padding ->
     LinesScreenContent(
