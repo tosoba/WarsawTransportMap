@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,12 +44,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.trm.warsawtransportmap.core.common.extensions.toErrorMessage
 import com.trm.warsawtransportmap.core.common.model.Loadable
@@ -67,21 +68,25 @@ import warsawtransportmap.feature.lines.generated.resources.select_all_content_d
 fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> Unit) {
   val state = viewModel.state
   val textFieldState = rememberTextFieldState()
-  var expanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
       SearchBar(
         inputField = {
+          val interactionSource = remember(::MutableInteractionSource)
+          val focusManager = LocalFocusManager.current
+          val focused by interactionSource.collectIsFocusedAsState()
+
           SearchBarDefaults.InputField(
             state = textFieldState,
             onSearch = {},
             expanded = false,
             onExpandedChange = {},
-            enabled = state is Loadable.Loaded,
+            readOnly = state !is Loadable.Loaded,
+            interactionSource = interactionSource,
             placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
             leadingIcon = {
-              IconButton(onClick = onBackClick) {
+              IconButton(onClick = { if (focused) focusManager.clearFocus() else onBackClick() }) {
                 Icon(
                   imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                   contentDescription = stringResource(Res.string.back_content_description),
@@ -115,14 +120,9 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
             },
           )
         },
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-        modifier =
-          Modifier.fillMaxWidth()
-            .padding(
-              horizontal = if (expanded) 0.dp else 16.dp,
-              vertical = if (expanded) 0.dp else 8.dp,
-            ),
+        expanded = false,
+        onExpandedChange = {},
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
       ) {}
     }
   ) { padding ->
