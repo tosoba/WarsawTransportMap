@@ -19,7 +19,7 @@ ktor = "3.4.3"
 okio = "3.17.0"
 maplibre = "0.12.1"
 material3 = "1.11.0-alpha07"
-navigation3 = "1.1.0"
+navigation3 = "1.1.1"
 spmForKmp = "1.9.1"
 
 [libraries]
