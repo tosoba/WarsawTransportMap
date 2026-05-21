@@ -9,18 +9,19 @@ androidx-datastore = "1.2.1"
 androidx-lifecycle = "2.10.0"
 buildconfig = "6.0.9"
 compose-material-icons = "1.7.3"
-compose-multiplatform = "1.10.3"
+compose-multiplatform = "1.11.0"
 koin = "4.2.1"
 kotlin = "2.3.21"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0-0.6.x-compat"
 kotlinx-serialization = "1.11.0"
-ktor = "3.4.3"
+ktor = "3.5.0"
 okio = "3.17.0"
-maplibre = "0.12.1"
+maplibre-compose = "0.13.0"
+maplibre-opengl = "13.1.0"
 material3 = "1.11.0-alpha07"
 navigation3 = "1.1.1"
-spmForKmp = "1.9.1"
+spmForKmp = "1.9.2"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -43,7 +44,8 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
-maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre" }
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre-compose" }
+maplibre-android-opengl = { module = "org.maplibre.gl:android-sdk-opengl", version.ref = "maplibre-opengl" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }

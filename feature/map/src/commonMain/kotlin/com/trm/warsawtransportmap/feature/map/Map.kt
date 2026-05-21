@@ -4,10 +4,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trm.warsawtransportmap.core.model.Vehicle
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -41,6 +43,8 @@ internal fun Map(
   vehicles: List<Vehicle>,
   onVehicleClick: (Vehicle) -> Unit,
 ) {
+  val scope = rememberCoroutineScope()
+
   MaplibreMap(
     modifier = Modifier.fillMaxSize(),
     baseStyle =
@@ -92,6 +96,19 @@ internal fun Map(
           50 to const(32.dp),
           100 to const(40.dp),
         ),
+      onClick = { features ->
+        features.firstOrNull(markersSource::isCluster)?.let {
+          scope.launch {
+            cameraState.animateTo(
+              cameraState.position.copy(
+                target = (it.geometry as Point).coordinates,
+                zoom = markersSource.getClusterExpansionZoom(it),
+              )
+            )
+          }
+          ClickResult.Consume
+        } ?: ClickResult.Pass
+      },
     )
 
     SymbolLayer(

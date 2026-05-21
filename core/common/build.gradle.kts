@@ -37,6 +37,4 @@ kotlin {
   }
 }
 
-compose.resources {
-  publicResClass = true
-}
+compose.resources { publicResClass = true }
