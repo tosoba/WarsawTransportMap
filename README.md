@@ -1,35 +1,26 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+<div style="text-align: center; width: 100%;">
+<h1>WarsawTransportMap</h1>
+</div>
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+<p style="text-align: center; width: 100%; line-height: 0; font-size: 0;">
+<img src="screenshots/top_banner.png" width="100%" style="vertical-align: bottom;">
+</p>
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## About
+**WarsawTransportMap** is a **Compose Multiplatform** app for **tracking live positions of public transport vehicles** in Warsaw which utilizes [UM](https://api.um.warszawa.pl/) API.
 
-### Build and Run Android Application
+## Features
+- **Shared UI** in Jetpack Compose
+- **Live map updates** showing current vehicles' positions
+- **Line selection** list
+- **Dynamic** light/dark **themes**
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
-
-### Build and Run iOS Application
-
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
-
----
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Used technologies
+- [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform) - declarative UI framework for shared Android and iOS user interfaces
+- [Navigation 3](https://developer.android.com/jetpack/androidx/releases/navigation) - screen flows and navigation management in Compose Multiplatform
+- [MapLibre Compose](https://github.com/maplibre/maplibre-compose) - interactive maps for Jetpack Compose and Compose Multiplatform
+- [Koin](https://insert-koin.io/) - lightweight dependency injection framework
+- [Ktor](https://ktor.io/) - asynchronous HTTP client for multiplatform network requests
+- [Coroutines](https://kotlinlang.org/docs/coroutines-guide.html) - asynchronous and concurrent programming
+- [DataStore](https://developer.android.com/topic/libraries/architecture/datastore) - on-device data storage solution for key-value pair preferences
+- [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization) - Kotlin multiplatform JSON serialization and deserialization
