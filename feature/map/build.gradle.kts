@@ -17,6 +17,10 @@ kotlin {
   iosSimulatorArm64()
 
   sourceSets {
+    androidMain.dependencies {
+      runtimeOnly(libs.maplibre.compose.runtime.vulkan.android)
+    }
+
     commonMain.dependencies {
       implementation(project(":core:common"))
       implementation(project(":core:data"))

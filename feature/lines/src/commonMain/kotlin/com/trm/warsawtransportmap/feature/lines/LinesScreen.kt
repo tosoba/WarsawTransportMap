@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,7 +62,7 @@ import warsawtransportmap.feature.lines.generated.resources.retry_button
 import warsawtransportmap.feature.lines.generated.resources.search_lines_placeholder
 import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> Unit) {
   val state = viewModel.state
@@ -232,7 +231,6 @@ private fun LazyGridItemScope.LineGroupHeader(title: String) {
   }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LazyGridItemScope.LineButton(line: Line, isSelected: Boolean, onClick: () -> Unit) {
   ToggleButton(

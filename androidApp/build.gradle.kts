@@ -39,12 +39,3 @@ dependencies {
 
   debugImplementation(libs.compose.uiTooling)
 }
-
-configurations
-  .matching { it.name.startsWith("debug") }
-  .all {
-    resolutionStrategy.dependencySubstitution {
-      substitute(module("org.maplibre.gl:android-sdk"))
-        .using(module(libs.maplibre.android.opengl.get().toString()))
-    }
-  }

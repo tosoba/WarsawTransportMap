@@ -18,10 +18,8 @@ kotlinx-serialization = "1.11.0"
 ktor = "3.6.0"
 okio = "3.18.2"
 maplibre-compose = "0.18.0"
-maplibre-opengl = "13.6.1-pre0"
-material3 = "1.11.0-alpha07"
+material3 = "1.13.0-alpha01"
 navigation3 = "1.1.2"
-spmForKmp = "1.9.7"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -45,7 +43,7 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre-compose" }
-maplibre-android-opengl = { module = "org.maplibre.gl:android-sdk-opengl", version.ref = "maplibre-opengl" }
+maplibre-compose-runtime-vulkan-android = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-android", version.ref = "maplibre-compose" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -67,4 +65,3 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-spmForKmp = { id = "io.github.frankois944.spmForKmp", version.ref = "spmForKmp" }

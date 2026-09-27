@@ -1,11 +1,11 @@
 package com.trm.warsawtransportmap.core.common.extensions
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import com.trm.warsawtransportmap.core.model.Vehicle
-import org.maplibre.compose.camera.CameraState
+import org.maplibre.compose.map.MapState
+import org.maplibre.compose.util.DpPadding
 import org.maplibre.spatialk.geojson.BoundingBox
 
 @Composable
@@ -37,12 +37,12 @@ fun rememberMapVehiclesBoundingBox(
 @Composable
 fun MapCameraAnimateToBoundingBoxEffect(
   boundingBox: BoundingBox?,
-  cameraState: CameraState,
-  padding: PaddingValues = PaddingValues.Zero,
+  mapState: MapState,
+  padding: DpPadding = DpPadding.Zero,
 ) {
   LaunchedEffect(boundingBox, padding) {
     if (boundingBox != null) {
-      cameraState.animateTo(boundingBox = boundingBox, padding = padding)
+      mapState.animateCameraToBounds(boundingBox = boundingBox, fitPadding = padding)
     }
   }
 }
