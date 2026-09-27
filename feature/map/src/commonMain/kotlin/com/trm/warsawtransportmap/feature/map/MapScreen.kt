@@ -68,6 +68,7 @@ import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
 import org.maplibre.compose.sources.GeoJsonData
@@ -102,123 +103,19 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
 
   val initialCameraPosition by
     viewModel.initialCameraPosition.collectAsStateWithLifecycle(initialValue = null)
-  val state =
-    rememberMapState(
-      initialCameraPosition =
-        CameraPosition(
-          target =
-            Position(
-              latitude = MapConstants.WARSAW_CENTER_LAT,
-              longitude = MapConstants.WARSAW_CENTER_LON,
-            ),
-          zoom = MapConstants.DEFAULT_ZOOM,
-        ),
-      baseStyle =
-        BaseStyle.Uri(
-          Res.getUri(
-            if (isSystemInDarkTheme()) "files/dark_style.json" else "files/light_style.json"
-          )
-        ),
-    ) {
-      val markersSource =
-        rememberGeoJsonSource(
-          data =
-            GeoJsonData.Features(
-              FeatureCollection(
-                vehicles.map { vehicle ->
-                  Feature(
-                    id = JsonPrimitive(vehicle.vehicleNumber),
-                    geometry = Point(Position(vehicle.longitude, vehicle.latitude)),
-                    properties = vehicle,
-                  )
-                }
-              )
-            ),
-          options = GeoJsonOptions(cluster = true, clusterRadius = 50, clusterMaxZoom = 14),
-        )
-
-      CircleLayer(
-        id = "clustered-markers",
-        source = markersSource,
-        filter = feature.has("point_count"),
-        color =
-          step(
-            input = feature["point_count"].asNumber(),
-            fallback = const(MaterialTheme.colorScheme.tertiaryContainer),
-            50 to const(MaterialTheme.colorScheme.secondaryContainer),
-            100 to const(MaterialTheme.colorScheme.primaryContainer),
-          ),
-        opacity = const(.9f),
-        radius =
-          step(
-            input = feature["point_count"].asNumber(),
-            fallback = const(24.dp),
-            50 to const(32.dp),
-            100 to const(40.dp),
-          ),
-        onClick = { features ->
-          features.firstOrNull(markersSource::isCluster)?.let {
-            clickedCluster = it
-            ClickResult.Consume
-          } ?: ClickResult.Pass
-        },
-      )
-
-      SymbolLayer(
-        id = "clustered-markers-count",
-        source = markersSource,
-        filter = feature.has("point_count"),
-        textField = feature["point_count_abbreviated"].asString(),
-        textFont = const(listOf("Noto Sans Regular")),
-        textColor =
-          step(
-            input = feature["point_count"].asNumber(),
-            fallback = const(MaterialTheme.colorScheme.onTertiaryContainer),
-            50 to const(MaterialTheme.colorScheme.onSecondaryContainer),
-            100 to const(MaterialTheme.colorScheme.onPrimaryContainer),
-          ),
-        textAllowOverlap = const(true),
-        iconAllowOverlap = const(true),
-      )
-
-      CircleLayer(
-        id = "unclustered-markers",
-        source = markersSource,
-        filter = !feature.has("point_count"),
-        color = const(MaterialTheme.colorScheme.surfaceContainerHighest),
-        radius = const(16.dp),
-        strokeColor = const(MaterialTheme.colorScheme.onSurfaceVariant),
-        strokeWidth = const(1.dp),
-        onClick = { features ->
-          features.firstOrNull()?.properties?.let { properties ->
-            runCatching {
-              scope.launch {
-                val message =
-                  Json.decodeFromJsonElement<Vehicle>(properties).toUpdateTimeMessage()
-                    ?: return@launch
-                snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar(message)
-              }
-            }
-          }
-          ClickResult.Consume
-        },
-      )
-
-      SymbolLayer(
-        id = "unclustered-markers-numbers",
-        source = markersSource,
-        filter = feature.has("lineNumber"),
-        textField = feature["lineNumber"].asString(),
-        textFont = const(listOf("Noto Sans Regular")),
-        textColor = const(MaterialTheme.colorScheme.onSurface),
-        textSize = const(12.sp),
-        textAllowOverlap = const(true),
-        iconAllowOverlap = const(true),
-      )
-    }
-
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
+  val state =
+    rememberVehiclesMapState(
+      vehicles = vehicles,
+      onClusterClick = { clickedCluster = it },
+      onVehicleClick = { vehicle ->
+        scope.launch {
+          val message = vehicle.toUpdateTimeMessage() ?: return@launch
+          snackbarHostState.currentSnackbarData?.dismiss()
+          snackbarHostState.showSnackbar(message)
+        }
+      },
+    )
 
   LaunchedEffect(state.isCameraMoving) {
     if (!state.isCameraMoving) {
@@ -335,6 +232,117 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     }
   }
 }
+
+@Composable
+private fun rememberVehiclesMapState(
+  vehicles: List<Vehicle>,
+  onClusterClick: (Feature<Geometry, JsonObject?>) -> Unit,
+  onVehicleClick: (Vehicle) -> Unit,
+): MapState =
+  rememberMapState(
+    initialCameraPosition =
+      CameraPosition(
+        target =
+          Position(
+            latitude = MapConstants.WARSAW_CENTER_LAT,
+            longitude = MapConstants.WARSAW_CENTER_LON,
+          ),
+        zoom = MapConstants.DEFAULT_ZOOM,
+      ),
+    baseStyle =
+      BaseStyle.Uri(
+        Res.getUri(if (isSystemInDarkTheme()) "files/dark_style.json" else "files/light_style.json")
+      ),
+  ) {
+    val markersSource =
+      rememberGeoJsonSource(
+        data =
+          GeoJsonData.Features(
+            FeatureCollection(
+              vehicles.map { vehicle ->
+                Feature(
+                  id = JsonPrimitive(vehicle.vehicleNumber),
+                  geometry = Point(Position(vehicle.longitude, vehicle.latitude)),
+                  properties = vehicle,
+                )
+              }
+            )
+          ),
+        options = GeoJsonOptions(cluster = true, clusterRadius = 50, clusterMaxZoom = 14),
+      )
+
+    CircleLayer(
+      id = "clustered-markers",
+      source = markersSource,
+      filter = feature.has("point_count"),
+      color =
+        step(
+          input = feature["point_count"].asNumber(),
+          fallback = const(MaterialTheme.colorScheme.tertiaryContainer),
+          50 to const(MaterialTheme.colorScheme.secondaryContainer),
+          100 to const(MaterialTheme.colorScheme.primaryContainer),
+        ),
+      opacity = const(.9f),
+      radius =
+        step(
+          input = feature["point_count"].asNumber(),
+          fallback = const(24.dp),
+          50 to const(32.dp),
+          100 to const(40.dp),
+        ),
+      onClick = { features ->
+        features.firstOrNull(markersSource::isCluster)?.let {
+          onClusterClick(it)
+          ClickResult.Consume
+        } ?: ClickResult.Pass
+      },
+    )
+
+    SymbolLayer(
+      id = "clustered-markers-count",
+      source = markersSource,
+      filter = feature.has("point_count"),
+      textField = feature["point_count_abbreviated"].asString(),
+      textFont = const(listOf("Noto Sans Regular")),
+      textColor =
+        step(
+          input = feature["point_count"].asNumber(),
+          fallback = const(MaterialTheme.colorScheme.onTertiaryContainer),
+          50 to const(MaterialTheme.colorScheme.onSecondaryContainer),
+          100 to const(MaterialTheme.colorScheme.onPrimaryContainer),
+        ),
+      textAllowOverlap = const(true),
+      iconAllowOverlap = const(true),
+    )
+
+    CircleLayer(
+      id = "unclustered-markers",
+      source = markersSource,
+      filter = !feature.has("point_count"),
+      color = const(MaterialTheme.colorScheme.surfaceContainerHighest),
+      radius = const(16.dp),
+      strokeColor = const(MaterialTheme.colorScheme.onSurfaceVariant),
+      strokeWidth = const(1.dp),
+      onClick = { features ->
+        features.firstOrNull()?.properties?.let { properties ->
+          runCatching { onVehicleClick(Json.decodeFromJsonElement<Vehicle>(properties)) }
+        }
+        ClickResult.Consume
+      },
+    )
+
+    SymbolLayer(
+      id = "unclustered-markers-numbers",
+      source = markersSource,
+      filter = feature.has("lineNumber"),
+      textField = feature["lineNumber"].asString(),
+      textFont = const(listOf("Noto Sans Regular")),
+      textColor = const(MaterialTheme.colorScheme.onSurface),
+      textSize = const(12.sp),
+      textAllowOverlap = const(true),
+      iconAllowOverlap = const(true),
+    )
+  }
 
 private suspend fun Vehicle.toUpdateTimeMessage(): String? = runCatching {
   val duration =
