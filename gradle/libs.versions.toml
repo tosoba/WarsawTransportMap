@@ -20,7 +20,7 @@ okio = "3.17.0"
 maplibre-compose = "0.13.0"
 maplibre-opengl = "13.1.0"
 material3 = "1.11.0-alpha07"
-navigation3 = "1.1.1"
+navigation3 = "1.1.2"
 spmForKmp = "1.9.2"
 
 [libraries]
