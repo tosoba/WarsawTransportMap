@@ -31,6 +31,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModel(
@@ -154,12 +155,12 @@ class MapViewModel(
               MAX_FETCH_DELAY_MILLIS - (Clock.System.now().toEpochMilliseconds() - backgroundTime),
             )
           else -> MAX_FETCH_DELAY_MILLIS
-        }
+        }.milliseconds
       )
 
       while (isActive) {
         fetchVehicles()
-        delay(MAX_FETCH_DELAY_MILLIS)
+        delay(MAX_FETCH_DELAY_MILLIS.milliseconds)
       }
     }
   }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.concurrent.Volatile
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
   private data class VehicleAnimation(
@@ -96,7 +97,7 @@ internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
           }
 
         if (allSettled) break
-        delay(FRAME_DELAY_MS)
+        delay(FRAME_DELAY_MS.milliseconds)
       }
     }
   }
