@@ -47,6 +47,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getPluralString
@@ -71,11 +72,12 @@ import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
-import org.maplibre.compose.sources.SourceDefaults
+import org.maplibre.compose.sources.GeoJsonSourceHandle
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
+import org.maplibre.spatialk.geojson.Geometry
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
@@ -96,7 +98,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
 
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
   val isLoadingVehicles by viewModel.isLoadingVehicles.collectAsStateWithLifecycle()
-  var clickedCluster by mutableStateOf<Point?>(null)
+  var clickedCluster by remember { mutableStateOf<Feature<Geometry, JsonObject?>?>(null) }
 
   val initialCameraPosition by
     viewModel.initialCameraPosition.collectAsStateWithLifecycle(initialValue = null)
@@ -118,8 +120,6 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
           )
         ),
     ) {
-      if (vehicles.isEmpty()) return@rememberMapState
-
       val markersSource =
         rememberGeoJsonSource(
           data =
@@ -158,7 +158,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
           ),
         onClick = { features ->
           features.firstOrNull(markersSource::isCluster)?.let {
-            clickedCluster = it.geometry as Point
+            clickedCluster = it
             ClickResult.Consume
           } ?: ClickResult.Pass
         },
@@ -247,11 +247,11 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
 
   LaunchedEffect(clickedCluster) {
     clickedCluster
-      ?.coordinates
       ?.let {
+        val handle = state.style.sources.filterIsInstance<GeoJsonSourceHandle>().first()
         CameraUpdate(
-          target = it,
-          zoom = (state.cameraPosition.zoom + 1).coerceAtMost(SourceDefaults.MAX_ZOOM.toDouble()),
+          target = (it.geometry as Point).coordinates,
+          zoom = handle.getClusterExpansionZoom(it),
         )
       }
       ?.let {
