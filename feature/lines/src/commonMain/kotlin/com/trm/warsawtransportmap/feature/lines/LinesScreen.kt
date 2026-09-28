@@ -31,7 +31,7 @@ import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -45,13 +45,12 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
-import com.trm.warsawtransportmap.core.common.extensions.toErrorMessage
+import com.trm.warsawtransportmap.core.common.extensions.toErrorStringResource
 import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.model.Line
 import org.jetbrains.compose.resources.stringResource
@@ -64,7 +63,6 @@ import warsawtransportmap.feature.lines.generated.resources.retry_button
 import warsawtransportmap.feature.lines.generated.resources.search_lines_placeholder
 import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> Unit) {
   val state = viewModel.state
@@ -72,91 +70,107 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
 
   Scaffold(
     topBar = {
-      val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Collapsed)
-
-      AppBarWithSearch(
-        state = searchBarState,
-        inputField = {
-          val interactionSource = remember(::MutableInteractionSource)
-          val focusManager = LocalFocusManager.current
-          val focused by interactionSource.collectIsFocusedAsState()
-
-          SearchBarDefaults.InputField(
-            textFieldState = textFieldState,
-            searchBarState = searchBarState,
-            onSearch = {},
-            readOnly = state !is Loadable.Loaded,
-            interactionSource = interactionSource,
-            placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
-            leadingIcon = {
-              IconButton(onClick = { if (focused) focusManager.clearFocus() else onBackClick() }) {
-                Icon(
-                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                  contentDescription = stringResource(Res.string.back_content_description),
-                )
-              }
-            },
-            trailingIcon = {
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
-                  IconButton(onClick = textFieldState::clearText) {
-                    Icon(
-                      imageVector = Icons.Default.Close,
-                      contentDescription = stringResource(Res.string.clear_content_description),
-                    )
-                  }
-                }
-
-                IconButton(enabled = state is Loadable.Loaded, onClick = viewModel::toggleAll) {
-                  val allSelected = state is Loadable.Loaded && state.data.allSelected
-                  Icon(
-                    imageVector =
-                      if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
-                    contentDescription =
-                      stringResource(
-                        if (allSelected) Res.string.deselect_all_content_description
-                        else Res.string.select_all_content_description
-                      ),
-                  )
-                }
-              }
-            },
-            modifier = Modifier.fillMaxWidth(),
-          )
-        },
-        modifier = Modifier.padding(horizontal = 8.dp),
+      LinesSearchTopBar(
+        textFieldState = textFieldState,
+        state = state,
+        onBackClick = onBackClick,
+        onToggleAll = viewModel::toggleAll,
       )
     }
   ) { padding ->
     LinesScreenContent(
       state = state,
-      textFieldState = textFieldState,
-      viewModel = viewModel,
+      query = textFieldState.text.toString(),
       modifier =
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(padding),
+      onRetryClick = viewModel::loadLines,
+      onLineClick = viewModel::toggleLine,
     )
   }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LinesSearchTopBar(
+  textFieldState: TextFieldState,
+  state: Loadable<LinesState>,
+  onBackClick: () -> Unit,
+  onToggleAll: () -> Unit,
+) {
+  val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Collapsed)
+
+  AppBarWithSearch(
+    state = searchBarState,
+    inputField = {
+      val interactionSource = remember(::MutableInteractionSource)
+      val focusManager = LocalFocusManager.current
+      val focused by interactionSource.collectIsFocusedAsState()
+
+      SearchBarDefaults.InputField(
+        textFieldState = textFieldState,
+        searchBarState = searchBarState,
+        onSearch = {},
+        readOnly = state !is Loadable.Loaded,
+        interactionSource = interactionSource,
+        placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
+        leadingIcon = {
+          IconButton(onClick = { if (focused) focusManager.clearFocus() else onBackClick() }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = stringResource(Res.string.back_content_description),
+            )
+          }
+        },
+        trailingIcon = {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
+              IconButton(onClick = textFieldState::clearText) {
+                Icon(
+                  imageVector = Icons.Default.Close,
+                  contentDescription = stringResource(Res.string.clear_content_description),
+                )
+              }
+            }
+
+            IconButton(enabled = state is Loadable.Loaded, onClick = onToggleAll) {
+              val allSelected = state is Loadable.Loaded && state.data.allSelected
+              Icon(
+                imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
+                contentDescription =
+                  stringResource(
+                    if (allSelected) Res.string.deselect_all_content_description
+                    else Res.string.select_all_content_description
+                  ),
+              )
+            }
+          }
+        },
+        modifier = Modifier.fillMaxWidth(),
+      )
+    },
+    modifier = Modifier.padding(horizontal = 8.dp),
+  )
 }
 
 @Composable
 private fun LinesScreenContent(
   state: Loadable<LinesState>,
-  textFieldState: TextFieldState,
-  viewModel: LinesViewModel,
+  query: String,
   modifier: Modifier = Modifier,
+  onRetryClick: () -> Unit,
+  onLineClick: (String) -> Unit,
 ) {
   Crossfade(targetState = state, modifier = modifier) { loadableState ->
     when (loadableState) {
       Loadable.Loading -> {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-          CircularProgressIndicator()
+          CircularWavyProgressIndicator()
         }
       }
       is Loadable.Loaded -> {
         LinesGrid(
           lines =
-            remember(textFieldState.text, loadableState) {
-              val query = textFieldState.text.toString()
+            remember(query, loadableState) {
               if (query.isBlank()) {
                 loadableState.data.lines
               } else {
@@ -168,19 +182,18 @@ private fun LinesScreenContent(
               }
             },
           selectedLines = loadableState.data.selectedLines,
-          onLineClick = viewModel::toggleLine,
+          onLineClick = onLineClick,
         )
       }
       is Loadable.Error -> {
-        val errorMessage by
-          produceState<String?>(initialValue = null, key1 = loadableState) {
-            value = loadableState.throwable.toErrorMessage()
-          }
         Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
           Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = errorMessage.orEmpty(), color = MaterialTheme.colorScheme.onBackground)
+            Text(
+              text = loadableState.throwable.toErrorStringResource(),
+              color = MaterialTheme.colorScheme.onBackground,
+            )
 
-            Button(onClick = viewModel::loadLines, modifier = Modifier.padding(top = 16.dp)) {
+            Button(onClick = onRetryClick, modifier = Modifier.padding(top = 16.dp)) {
               Text(text = stringResource(Res.string.retry_button))
             }
           }
