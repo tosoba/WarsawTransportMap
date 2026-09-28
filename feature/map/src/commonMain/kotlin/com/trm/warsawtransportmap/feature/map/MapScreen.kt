@@ -4,12 +4,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterCenterFocus
@@ -56,7 +55,6 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.camera.CameraMoveReason
-import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.expressions.dsl.asNumber
 import org.maplibre.compose.expressions.dsl.asString
@@ -91,18 +89,75 @@ import warsawtransportmap.feature.map.generated.resources.vehicle_updated_minute
 import warsawtransportmap.feature.map.generated.resources.vehicle_updated_now
 import warsawtransportmap.feature.map.generated.resources.vehicle_updated_seconds_ago
 import kotlin.time.Clock
+import com.trm.warsawtransportmap.core.model.CameraPosition as SavedCameraPosition
+import org.maplibre.compose.camera.CameraPosition as MapCameraPosition
 
 @Composable
 fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -> Unit) {
-  val scope = rememberCoroutineScope()
   val snackbarHostState = remember(::SnackbarHostState)
-
   val vehicles by viewModel.vehicles.collectAsStateWithLifecycle()
   val isLoadingVehicles by viewModel.isLoadingVehicles.collectAsStateWithLifecycle()
-  var clickedCluster by remember { mutableStateOf<Feature<Geometry, JsonObject?>?>(null) }
-
   val initialCameraPosition by
     viewModel.initialCameraPosition.collectAsStateWithLifecycle(initialValue = null)
+  val errors = viewModel.errors
+
+  LaunchedEffect(errors) {
+    errors.collectLatest { error ->
+      snackbarHostState.currentSnackbarData?.dismiss()
+      snackbarHostState.showSnackbar(message = error.toErrorMessage())
+    }
+  }
+
+  Scaffold(
+    topBar = {
+      TwoRowsTopAppBar(
+        title = { Text(text = stringResource(Res.string.app_name)) },
+        subtitle = {
+          Text(
+            text = pluralStringResource(Res.plurals.tracking_vehicles, vehicles.size, vehicles.size)
+          )
+        },
+        collapsedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+        expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+        windowInsets = WindowInsets(),
+      )
+    },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    floatingActionButton = {
+      ExtendedFloatingActionButton(
+        onClick = onNavigateToLines,
+        icon = {
+          Icon(
+            imageVector = Icons.Default.GridView,
+            contentDescription = stringResource(Res.string.filter_lines_content_description),
+          )
+        },
+        text = { Text(stringResource(Res.string.select_lines)) },
+      )
+    },
+  ) { paddingValues ->
+    MapContent(
+      vehicles = vehicles,
+      isLoadingVehicles = isLoadingVehicles,
+      initialCameraPosition = initialCameraPosition,
+      snackbarHostState = snackbarHostState,
+      onCameraPositionChange = viewModel::onCameraPositionChange,
+      paddingValues = paddingValues,
+    )
+  }
+}
+
+@Composable
+private fun MapContent(
+  vehicles: List<Vehicle>,
+  isLoadingVehicles: Boolean,
+  initialCameraPosition: SavedCameraPosition?,
+  snackbarHostState: SnackbarHostState,
+  onCameraPositionChange: (MapCameraPosition) -> Unit,
+  paddingValues: PaddingValues,
+) {
+  val scope = rememberCoroutineScope()
+  var clickedCluster by remember { mutableStateOf<Feature<Geometry, JsonObject?>?>(null) }
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
   val state =
     rememberVehiclesMapState(
@@ -118,9 +173,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     )
 
   LaunchedEffect(state.isCameraMoving) {
-    if (!state.isCameraMoving) {
-      viewModel.onCameraPositionChange(state.cameraPosition)
-    }
+    if (!state.isCameraMoving) onCameraPositionChange(state.cameraPosition)
   }
 
   initialCameraPosition?.let {
@@ -157,78 +210,46 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
       }
   }
 
-  LaunchedEffect(Unit) {
-    viewModel.errors.collectLatest { error ->
-      snackbarHostState.currentSnackbarData?.dismiss()
-      snackbarHostState.showSnackbar(message = error.toErrorMessage())
-    }
-  }
+  Box(modifier = Modifier.fillMaxSize()) {
+    MapCanvas(state = state, isLoadingVehicles = isLoadingVehicles, paddingValues = paddingValues)
 
-  Scaffold(
-    topBar = {
-      TwoRowsTopAppBar(
-        title = { Text(text = stringResource(Res.string.app_name)) },
-        subtitle = {
-          Text(
-            text = pluralStringResource(Res.plurals.tracking_vehicles, vehicles.size, vehicles.size)
-          )
-        },
-        collapsedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
-        expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
-        windowInsets = WindowInsets(),
-      )
-    },
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    floatingActionButton = {
-      Column(horizontalAlignment = Alignment.End) {
-        AnimatedVisibility(visible = vehicles.isNotEmpty()) {
-          FloatingActionButton(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            onClick = {
-              boundingBox?.let { scope.launch { state.animateCameraToBounds(it) } }
-            },
-          ) {
-            Icon(
-              imageVector = Icons.Default.FilterCenterFocus,
-              contentDescription = stringResource(Res.string.center_map_content_description),
-            )
-          }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ExtendedFloatingActionButton(
-          onClick = onNavigateToLines,
-          icon = {
-            Icon(
-              imageVector = Icons.Default.GridView,
-              contentDescription = stringResource(Res.string.filter_lines_content_description),
-            )
-          },
-          text = { Text(stringResource(Res.string.select_lines)) },
+    AnimatedVisibility(
+      visible = vehicles.isNotEmpty(),
+      modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 112.dp),
+    ) {
+      FloatingActionButton(
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        onClick = { boundingBox?.let { scope.launch { state.animateCameraToBounds(it) } } },
+      ) {
+        Icon(
+          imageVector = Icons.Default.FilterCenterFocus,
+          contentDescription = stringResource(Res.string.center_map_content_description),
         )
       }
-    },
-  ) { paddingValues ->
-    MaplibreMap(
-      modifier = Modifier.fillMaxSize(),
-      state = state,
-      interactions =
-        MapInteractions {
-          camera {
-            rotate { enabled = false }
-            tilt { enabled = false }
-          }
-        },
+    }
+  }
+}
+
+@Composable
+private fun MapCanvas(state: MapState, isLoadingVehicles: Boolean, paddingValues: PaddingValues) {
+  MaplibreMap(
+    modifier = Modifier.fillMaxSize(),
+    state = state,
+    interactions =
+      MapInteractions {
+        camera {
+          rotate { enabled = false }
+          tilt { enabled = false }
+        }
+      },
+  ) {
+    AnimatedVisibility(
+      visible = isLoadingVehicles,
+      enter = fadeIn(),
+      exit = fadeOut(),
+      modifier = Modifier.padding(paddingValues),
     ) {
-      AnimatedVisibility(
-        visible = isLoadingVehicles,
-        enter = fadeIn(),
-        exit = fadeOut(),
-        modifier = Modifier.padding(paddingValues),
-      ) {
-        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-      }
+      LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
     }
   }
 }
@@ -241,7 +262,7 @@ private fun rememberVehiclesMapState(
 ): MapState =
   rememberMapState(
     initialCameraPosition =
-      CameraPosition(
+      MapCameraPosition(
         target =
           Position(
             latitude = MapConstants.WARSAW_CENTER_LAT,

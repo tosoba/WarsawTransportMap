@@ -78,7 +78,7 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
       )
     }
   ) { padding ->
-    LinesScreenContent(
+    LinesContent(
       state = state,
       query = textFieldState.text.toString(),
       modifier =
@@ -153,7 +153,7 @@ private fun LinesSearchTopBar(
 }
 
 @Composable
-private fun LinesScreenContent(
+private fun LinesContent(
   state: Loadable<LinesState>,
   query: String,
   modifier: Modifier = Modifier,
