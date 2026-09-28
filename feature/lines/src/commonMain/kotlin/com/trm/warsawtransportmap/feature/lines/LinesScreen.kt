@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,10 +38,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -70,17 +72,19 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
 
   Scaffold(
     topBar = {
-      SearchBar(
+      val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Collapsed)
+
+      AppBarWithSearch(
+        state = searchBarState,
         inputField = {
           val interactionSource = remember(::MutableInteractionSource)
           val focusManager = LocalFocusManager.current
           val focused by interactionSource.collectIsFocusedAsState()
 
           SearchBarDefaults.InputField(
-            state = textFieldState,
+            textFieldState = textFieldState,
+            searchBarState = searchBarState,
             onSearch = {},
-            expanded = false,
-            onExpandedChange = {},
             readOnly = state !is Loadable.Loaded,
             interactionSource = interactionSource,
             placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
@@ -102,9 +106,9 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
                     )
                   }
                 }
-                val allSelected =
-                  remember(state) { (state as? Loadable.Loaded)?.data?.allSelected ?: false }
+
                 IconButton(enabled = state is Loadable.Loaded, onClick = viewModel::toggleAll) {
+                  val allSelected = state is Loadable.Loaded && state.data.allSelected
                   Icon(
                     imageVector =
                       if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
@@ -117,12 +121,11 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
                 }
               }
             },
+            modifier = Modifier.fillMaxWidth(),
           )
         },
-        expanded = false,
-        onExpandedChange = {},
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-      ) {}
+        modifier = Modifier.padding(horizontal = 8.dp),
+      )
     }
   ) { padding ->
     LinesScreenContent(
