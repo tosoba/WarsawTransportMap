@@ -3,7 +3,6 @@ package com.trm.warsawtransportmap.feature.lines
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,7 +84,6 @@ fun LinesTopBar(
         searchBarState = searchBarState,
         onSearch = {},
         readOnly = isLoading,
-        interactionSource = remember(::MutableInteractionSource),
         placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
         trailingIcon = {
           Row(verticalAlignment = Alignment.CenterVertically) {
