@@ -1,9 +1,6 @@
 package com.trm.warsawtransportmap
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -38,12 +35,15 @@ import androidx.compose.ui.unit.DpSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.coreCommonModule
 import com.trm.warsawtransportmap.core.common.extensions.toErrorMessage
+import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.data.coreDataModule
 import com.trm.warsawtransportmap.core.datastore.coreDataStoreModule
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.core.network.di.coreNetworkModule
 import com.trm.warsawtransportmap.feature.lines.LinesPage
+import com.trm.warsawtransportmap.feature.lines.LinesToggleAllFab
 import com.trm.warsawtransportmap.feature.lines.LinesTopBar
+import com.trm.warsawtransportmap.feature.lines.LinesViewModel
 import com.trm.warsawtransportmap.feature.lines.featureLinesModule
 import com.trm.warsawtransportmap.feature.map.MapCenterVehiclesBoundingBoxFab
 import com.trm.warsawtransportmap.feature.map.MapPage
@@ -114,6 +114,7 @@ fun App() {
           },
         )
 
+      val linesViewModel = koinViewModel<LinesViewModel>()
       val linesTextFieldState = rememberTextFieldState()
 
       Row(modifier = Modifier.fillMaxSize()) {
@@ -127,8 +128,15 @@ fun App() {
           topBar = {
             AnimatedContent(currentPage) {
               when (it) {
-                AppPage.MAP -> MapTopBar(vehicleCount = vehicles.size)
-                AppPage.LINES -> LinesTopBar(textFieldState = linesTextFieldState)
+                AppPage.MAP -> {
+                  MapTopBar(vehiclesCount = vehicles.size)
+                }
+                AppPage.LINES -> {
+                  LinesTopBar(
+                    textFieldState = linesTextFieldState,
+                    isLoading = linesViewModel.state is Loadable.Loading,
+                  )
+                }
               }
             }
           },
@@ -139,16 +147,19 @@ fun App() {
           },
           snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
           floatingActionButton = {
-            AnimatedVisibility(
-              visible = currentPage == AppPage.MAP,
-              enter = fadeIn(),
-              exit = fadeOut(),
-            ) {
-              MapCenterVehiclesBoundingBoxFab(
-                onClick = {
-                  scope.launch { mapPageState.animateToVehiclesBoundingBox() }
+            AnimatedContent(currentPage) { page ->
+              when (page) {
+                AppPage.MAP -> {
+                  MapCenterVehiclesBoundingBoxFab(
+                    onClick = {
+                      scope.launch { mapPageState.animateToVehiclesBoundingBox() }
+                    }
+                  )
                 }
-              )
+                AppPage.LINES -> {
+                  LinesToggleAllFab()
+                }
+              }
             }
           },
         ) { paddingValues ->

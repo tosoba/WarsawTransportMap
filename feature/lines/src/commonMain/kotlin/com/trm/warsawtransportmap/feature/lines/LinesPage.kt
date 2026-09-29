@@ -2,7 +2,6 @@ package com.trm.warsawtransportmap.feature.lines
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +21,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
@@ -31,11 +29,11 @@ import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
@@ -59,36 +57,35 @@ import warsawtransportmap.feature.lines.generated.resources.search_lines_placeho
 import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
 
 @Composable
-fun LinesTopBar(textFieldState: TextFieldState) {
-  val viewModel: LinesViewModel = koinViewModel()
+fun LinesPage(query: String, modifier: Modifier = Modifier) {
+  val viewModel = koinViewModel<LinesViewModel>()
 
-  LinesSearchTopBar(
-    textFieldState = textFieldState,
+  LinesContent(
     state = viewModel.state,
-    onToggleAll = viewModel::toggleAll,
+    query = query,
+    modifier = modifier,
+    onRetryClick = viewModel::loadLines,
+    onLineClick = viewModel::toggleLine,
   )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LinesSearchTopBar(
+fun LinesTopBar(
   textFieldState: TextFieldState,
-  state: Loadable<LinesState>,
-  onToggleAll: () -> Unit,
+  isLoading: Boolean,
 ) {
   val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Collapsed)
 
+  @OptIn(ExperimentalMaterial3Api::class)
   AppBarWithSearch(
     state = searchBarState,
     inputField = {
-      val interactionSource = remember(::MutableInteractionSource)
-
       SearchBarDefaults.InputField(
         textFieldState = textFieldState,
         searchBarState = searchBarState,
         onSearch = {},
-        readOnly = state !is Loadable.Loaded,
-        interactionSource = interactionSource,
+        readOnly = isLoading,
+        interactionSource = remember(::MutableInteractionSource),
         placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
         trailingIcon = {
           Row(verticalAlignment = Alignment.CenterVertically) {
@@ -100,18 +97,6 @@ private fun LinesSearchTopBar(
                 )
               }
             }
-
-            IconButton(enabled = state is Loadable.Loaded, onClick = onToggleAll) {
-              val allSelected = state is Loadable.Loaded && state.data.allSelected
-              Icon(
-                imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
-                contentDescription =
-                  stringResource(
-                    if (allSelected) Res.string.deselect_all_content_description
-                    else Res.string.select_all_content_description
-                  ),
-              )
-            }
           }
         },
         modifier = Modifier.fillMaxWidth(),
@@ -122,16 +107,23 @@ private fun LinesSearchTopBar(
 }
 
 @Composable
-fun LinesPage(query: String, modifier: Modifier = Modifier) {
+fun LinesToggleAllFab() {
   val viewModel = koinViewModel<LinesViewModel>()
+  val state = viewModel.state
 
-  LinesContent(
-    state = viewModel.state,
-    query = query,
-    modifier = modifier,
-    onRetryClick = viewModel::loadLines,
-    onLineClick = viewModel::toggleLine,
-  )
+  if (state is Loadable.Loaded) {
+    val allSelected = state.data.allSelected
+    FloatingActionButton(onClick = viewModel::toggleAll) {
+      Icon(
+        imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
+        contentDescription =
+          stringResource(
+            if (allSelected) Res.string.deselect_all_content_description
+            else Res.string.select_all_content_description
+          ),
+      )
+    }
+  }
 }
 
 @Composable
