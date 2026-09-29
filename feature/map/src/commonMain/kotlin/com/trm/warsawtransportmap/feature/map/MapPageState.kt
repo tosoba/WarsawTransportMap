@@ -165,9 +165,9 @@ private fun rememberVehiclesMapState(
       color =
         step(
           input = feature["point_count"].asNumber(),
-          fallback = const(MaterialTheme.colorScheme.tertiaryContainer),
-          50 to const(MaterialTheme.colorScheme.secondaryContainer),
-          100 to const(MaterialTheme.colorScheme.primaryContainer),
+          fallback = const(MaterialTheme.colorScheme.tertiaryFixedDim),
+          50 to const(MaterialTheme.colorScheme.secondaryFixedDim),
+          100 to const(MaterialTheme.colorScheme.primaryFixedDim),
         ),
       opacity = const(.9f),
       radius =
@@ -194,9 +194,9 @@ private fun rememberVehiclesMapState(
       textColor =
         step(
           input = feature["point_count"].asNumber(),
-          fallback = const(MaterialTheme.colorScheme.onTertiaryContainer),
-          50 to const(MaterialTheme.colorScheme.onSecondaryContainer),
-          100 to const(MaterialTheme.colorScheme.onPrimaryContainer),
+          fallback = const(MaterialTheme.colorScheme.onTertiaryFixed),
+          50 to const(MaterialTheme.colorScheme.onSecondaryFixed),
+          100 to const(MaterialTheme.colorScheme.onPrimaryFixed),
         ),
       textAllowOverlap = const(true),
       iconAllowOverlap = const(true),
@@ -206,7 +206,7 @@ private fun rememberVehiclesMapState(
       id = "unclustered-markers",
       source = markersSource,
       filter = !feature.has("point_count"),
-      color = const(MaterialTheme.colorScheme.surfaceContainerHighest),
+      color = const(MaterialTheme.colorScheme.surfaceContainerLow),
       radius = const(16.dp),
       strokeColor = const(MaterialTheme.colorScheme.onSurfaceVariant),
       strokeWidth = const(1.dp),
