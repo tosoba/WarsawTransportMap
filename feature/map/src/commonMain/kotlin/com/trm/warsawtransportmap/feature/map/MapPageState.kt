@@ -149,13 +149,19 @@ private fun rememberVehiclesMapState(
               vehicles.map { vehicle ->
                 Feature(
                   id = JsonPrimitive(vehicle.vehicleNumber),
-                  geometry = Point(Position(vehicle.longitude, vehicle.latitude)),
+                  geometry =
+                    Point(
+                      Position(
+                        longitude = vehicle.longitude,
+                        latitude = vehicle.latitude,
+                      )
+                    ),
                   properties = vehicle,
                 )
               }
             )
           ),
-        options = GeoJsonOptions(cluster = true, clusterRadius = 50, clusterMaxZoom = 14),
+        options = GeoJsonOptions(cluster = true, clusterRadius = 50),
       )
 
     CircleLayer(
