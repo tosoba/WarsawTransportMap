@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
@@ -67,7 +66,6 @@ import warsawtransportmap.composeapp.generated.resources.vehicle_updated_seconds
 import kotlin.time.Clock
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun App() {
   KoinApplication(
     configuration =
