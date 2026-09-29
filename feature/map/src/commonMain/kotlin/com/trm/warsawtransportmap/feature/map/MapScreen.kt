@@ -78,7 +78,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
     }
   }
 
-  val (state, boundingBox) =
+  val state =
     rememberMapScreenState(
       vehicles = vehicles,
       initialCameraPosition = initialCameraPosition,
@@ -111,7 +111,7 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
       Column(horizontalAlignment = Alignment.End) {
         FloatingActionButton(
           containerColor = MaterialTheme.colorScheme.secondaryContainer,
-          onClick = { boundingBox?.let { scope.launch { state.animateCameraToBounds(it) } } },
+          onClick = { scope.launch { state.animateToVehiclesBoundingBox() } },
         ) {
           Icon(
             imageVector = Icons.Default.FilterCenterFocus,
@@ -134,7 +134,11 @@ fun MapScreen(viewModel: MapViewModel = koinViewModel(), onNavigateToLines: () -
       }
     },
   ) { paddingValues ->
-    MapCanvas(state = state, isLoadingVehicles = isLoadingVehicles, paddingValues = paddingValues)
+    MapCanvas(
+      state = state.mapState,
+      isLoadingVehicles = isLoadingVehicles,
+      paddingValues = paddingValues,
+    )
   }
 }
 

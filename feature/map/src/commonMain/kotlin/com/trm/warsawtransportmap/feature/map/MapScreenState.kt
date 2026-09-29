@@ -47,8 +47,12 @@ import com.trm.warsawtransportmap.core.model.CameraPosition as SavedCameraPositi
 
 internal data class MapScreenState(
   val mapState: MapState,
-  val boundingBox: BoundingBox?,
-)
+  private val boundingBox: BoundingBox?,
+) {
+  suspend fun animateToVehiclesBoundingBox() {
+    boundingBox?.let { mapState.animateCameraToBounds(it) }
+  }
+}
 
 @Composable
 internal fun rememberMapScreenState(
