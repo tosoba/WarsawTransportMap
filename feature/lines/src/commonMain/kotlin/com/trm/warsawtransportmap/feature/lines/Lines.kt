@@ -2,12 +2,15 @@ package com.trm.warsawtransportmap.feature.lines
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,15 +23,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.AppBarWithSearch
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExpandedFullScreenContainedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,62 +62,84 @@ import warsawtransportmap.feature.lines.generated.resources.search_lines_placeho
 import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
 
 @Composable
-fun LinesPage(query: String, modifier: Modifier = Modifier) {
+fun LinesTopBar(onBackClick: () -> Unit) {
+  val textFieldState = rememberTextFieldState()
+  val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Expanded)
   val viewModel = koinViewModel<LinesViewModel>()
+  val state = viewModel.state
 
-  LinesContent(
-    state = viewModel.state,
-    query = query,
-    modifier = modifier,
-    onRetryClick = viewModel::loadLines,
-    onLineClick = viewModel::toggleLine,
-  )
-}
+  LaunchedEffect(searchBarState.targetValue) {
+    if (searchBarState.targetValue == SearchBarValue.Collapsed) onBackClick()
+  }
 
-@Composable
-fun LinesTopBar(
-  textFieldState: TextFieldState,
-  isLoading: Boolean,
-) {
-  val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Collapsed)
-
-  @OptIn(ExperimentalMaterial3Api::class)
-  AppBarWithSearch(
-    state = searchBarState,
-    inputField = {
+  val inputField =
+    @Composable {
       SearchBarDefaults.InputField(
         textFieldState = textFieldState,
         searchBarState = searchBarState,
         onSearch = {},
-        readOnly = isLoading,
+        readOnly = state is Loadable.Loading,
+        leadingIcon = {
+          IconButton(onClick = onBackClick) {
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+          }
+        },
         placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
         trailingIcon = {
           Row(verticalAlignment = Alignment.CenterVertically) {
-            AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
-              IconButton(onClick = textFieldState::clearText) {
-                Icon(
-                  imageVector = Icons.Default.Close,
-                  contentDescription = stringResource(Res.string.clear_content_description),
-                )
-              }
-            }
+            LinesClearSearchTextButton(textFieldState)
+
+            LinesToggleAllButton(
+              isVisible = state is Loadable.Loaded,
+              allSelected = state is Loadable.Loaded && state.data.allSelected,
+              onToggleAll = viewModel::toggleAll,
+            )
           }
         },
         modifier = Modifier.fillMaxWidth(),
       )
-    },
-    modifier = Modifier.padding(horizontal = 8.dp),
+    }
+
+  @OptIn(ExperimentalMaterial3Api::class)
+  AppBarWithSearch(
+    state = searchBarState,
+    inputField = inputField,
   )
+
+  ExpandedFullScreenContainedSearchBar(
+    state = searchBarState,
+    inputField = inputField,
+  ) {
+    LinesContent(
+      state = state,
+      searchText = textFieldState.text.toString(),
+      modifier = Modifier.fillMaxSize(),
+      onRetryClick = viewModel::loadLines,
+      onLineClick = viewModel::toggleLine,
+    )
+  }
 }
 
 @Composable
-fun LinesToggleAllFab() {
-  val viewModel = koinViewModel<LinesViewModel>()
-  val state = viewModel.state
+private fun RowScope.LinesClearSearchTextButton(textFieldState: TextFieldState) {
+  AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
+    IconButton(onClick = textFieldState::clearText) {
+      Icon(
+        imageVector = Icons.Default.Close,
+        contentDescription = stringResource(Res.string.clear_content_description),
+      )
+    }
+  }
+}
 
-  if (state is Loadable.Loaded) {
-    val allSelected = state.data.allSelected
-    FloatingActionButton(onClick = viewModel::toggleAll) {
+@Composable
+private fun RowScope.LinesToggleAllButton(
+  isVisible: Boolean,
+  allSelected: Boolean,
+  onToggleAll: () -> Unit,
+) {
+  AnimatedVisibility(visible = isVisible, enter = fadeIn(), exit = fadeOut()) {
+    IconButton(onClick = onToggleAll) {
       Icon(
         imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
         contentDescription =
@@ -127,7 +155,7 @@ fun LinesToggleAllFab() {
 @Composable
 private fun LinesContent(
   state: Loadable<LinesState>,
-  query: String,
+  searchText: String,
   modifier: Modifier = Modifier,
   onRetryClick: () -> Unit,
   onLineClick: (String) -> Unit,
@@ -142,13 +170,13 @@ private fun LinesContent(
       is Loadable.Loaded -> {
         LinesGrid(
           lines =
-            remember(query, loadableState) {
-              if (query.isBlank()) {
+            remember(searchText, loadableState) {
+              if (searchText.isBlank()) {
                 loadableState.data.lines
               } else {
                 loadableState.data.lines
                   .mapValues { (_, lines) ->
-                    lines.filter { it.number.contains(query, ignoreCase = true) }
+                    lines.filter { it.number.contains(searchText, ignoreCase = true) }
                   }
                   .filterValues { it.isNotEmpty() }
               }

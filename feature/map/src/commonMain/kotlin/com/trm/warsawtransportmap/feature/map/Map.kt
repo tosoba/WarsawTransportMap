@@ -21,12 +21,12 @@ import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
 import warsawtransportmap.feature.map.generated.resources.Res
-import warsawtransportmap.feature.map.generated.resources.app_name
 import warsawtransportmap.feature.map.generated.resources.center_map_content_description
+import warsawtransportmap.feature.map.generated.resources.app_name
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 
 @Composable
-fun MapPage(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Modifier) {
+fun Map(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Modifier) {
   MaplibreMap(
     modifier = modifier,
     state = state,
@@ -38,13 +38,19 @@ fun MapPage(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Mo
         }
       },
   ) {
-    AnimatedVisibility(
-      visible = isLoadingVehicles,
-      enter = fadeIn(),
-      exit = fadeOut(),
-    ) {
+    AnimatedVisibility(visible = isLoadingVehicles, enter = fadeIn(), exit = fadeOut()) {
       LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
     }
+  }
+}
+
+@Composable
+fun MapCenterVehiclesBoundingBoxFab(onClick: () -> Unit) {
+  FloatingActionButton(onClick = onClick) {
+    Icon(
+      imageVector = Icons.Default.FilterCenterFocus,
+      contentDescription = stringResource(Res.string.center_map_content_description),
+    )
   }
 }
 
@@ -59,14 +65,4 @@ fun MapTopBar(vehiclesCount: Int) {
     expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
     windowInsets = WindowInsets(),
   )
-}
-
-@Composable
-fun MapCenterVehiclesBoundingBoxFab(onClick: () -> Unit) {
-  FloatingActionButton(onClick = onClick) {
-    Icon(
-      imageVector = Icons.Default.FilterCenterFocus,
-      contentDescription = stringResource(Res.string.center_map_content_description),
-    )
-  }
 }

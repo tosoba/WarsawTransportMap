@@ -4,12 +4,10 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
@@ -26,8 +24,10 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -35,18 +35,14 @@ import androidx.compose.ui.unit.DpSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.coreCommonModule
 import com.trm.warsawtransportmap.core.common.extensions.toErrorMessage
-import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.data.coreDataModule
 import com.trm.warsawtransportmap.core.datastore.coreDataStoreModule
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.core.network.di.coreNetworkModule
-import com.trm.warsawtransportmap.feature.lines.LinesPage
-import com.trm.warsawtransportmap.feature.lines.LinesToggleAllFab
 import com.trm.warsawtransportmap.feature.lines.LinesTopBar
-import com.trm.warsawtransportmap.feature.lines.LinesViewModel
 import com.trm.warsawtransportmap.feature.lines.featureLinesModule
+import com.trm.warsawtransportmap.feature.map.Map
 import com.trm.warsawtransportmap.feature.map.MapCenterVehiclesBoundingBoxFab
-import com.trm.warsawtransportmap.feature.map.MapPage
 import com.trm.warsawtransportmap.feature.map.MapTopBar
 import com.trm.warsawtransportmap.feature.map.MapViewModel
 import com.trm.warsawtransportmap.feature.map.featureMapModule
@@ -71,6 +67,7 @@ import warsawtransportmap.composeapp.generated.resources.vehicle_updated_seconds
 import kotlin.time.Clock
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun App() {
   KoinApplication(
     configuration =
@@ -86,17 +83,15 @@ fun App() {
       }
   ) {
     AppTheme {
-      val pagerState = rememberPagerState(pageCount = AppPage.entries::size)
       val scope = rememberCoroutineScope()
       val snackbarHostState = remember(::SnackbarHostState)
+      var selectedPage by remember { mutableStateOf(AppPage.MAP) }
       val useNavigationRail = shouldUseNavigationRail()
-      val currentPage = AppPage.entries[pagerState.currentPage]
-      val onPageSelected: (AppPage) -> Unit = { page ->
-        scope.launch { pagerState.animateScrollToPage(page.pagerIndex) }
-      }
+      val onPageSelected: (AppPage) -> Unit = { selectedPage = it }
 
       val mapViewModel = koinViewModel<MapViewModel>()
       val vehicles by mapViewModel.vehicles.collectAsStateWithLifecycle()
+      val isLoadingVehicles by mapViewModel.isLoadingVehicles.collectAsStateWithLifecycle()
       val mapPageState =
         rememberMapPageState(
           vehicles = vehicles,
@@ -114,27 +109,32 @@ fun App() {
           },
         )
 
-      val linesViewModel = koinViewModel<LinesViewModel>()
-      val linesTextFieldState = rememberTextFieldState()
+      LaunchedEffect(mapViewModel.errors) {
+        mapViewModel.errors.collectLatest { error ->
+          snackbarHostState.currentSnackbarData?.dismiss()
+          snackbarHostState.showSnackbar(message = error.toErrorMessage())
+        }
+      }
 
       Row(modifier = Modifier.fillMaxSize()) {
         if (useNavigationRail) {
-          AppNavigationRail(currentPage = currentPage, onPageSelected = onPageSelected)
+          AppNavigationRail(currentPage = selectedPage, onPageSelected = onPageSelected)
         }
 
         Scaffold(
           modifier = Modifier.weight(1f),
           containerColor = MaterialTheme.colorScheme.background,
           topBar = {
-            AnimatedContent(currentPage) {
-              when (it) {
+            AnimatedContent(targetState = selectedPage) { page ->
+              when (page) {
                 AppPage.MAP -> {
                   MapTopBar(vehiclesCount = vehicles.size)
                 }
                 AppPage.LINES -> {
                   LinesTopBar(
-                    textFieldState = linesTextFieldState,
-                    isLoading = linesViewModel.state is Loadable.Loading,
+                    onBackClick = {
+                      selectedPage = AppPage.MAP
+                    }
                   )
                 }
               }
@@ -142,63 +142,30 @@ fun App() {
           },
           bottomBar = {
             if (!useNavigationRail) {
-              AppBottomBar(currentPage = currentPage, onPageSelected = onPageSelected)
+              AppBottomBar(currentPage = selectedPage, onPageSelected = onPageSelected)
             }
           },
           snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
           floatingActionButton = {
-            AnimatedContent(currentPage) { page ->
-              when (page) {
-                AppPage.MAP -> {
-                  MapCenterVehiclesBoundingBoxFab(
-                    onClick = {
-                      scope.launch { mapPageState.animateToVehiclesBoundingBox() }
-                    }
-                  )
-                }
-                AppPage.LINES -> {
-                  LinesToggleAllFab()
-                }
-              }
-            }
+            MapCenterVehiclesBoundingBoxFab(
+              onClick = { scope.launch { mapPageState.animateToVehiclesBoundingBox() } }
+            )
           },
         ) { paddingValues ->
-          HorizontalPager(
-            state = pagerState,
+          Map(
+            state = mapPageState.mapState,
+            isLoadingVehicles = isLoadingVehicles,
             modifier = Modifier.fillMaxSize().padding(paddingValues),
-            userScrollEnabled = false,
-            beyondViewportPageCount = 1,
-          ) { page ->
-            when (AppPage.entries[page]) {
-              AppPage.MAP -> {
-                val isLoadingVehicles by
-                  mapViewModel.isLoadingVehicles.collectAsStateWithLifecycle()
-
-                LaunchedEffect(mapViewModel.errors) {
-                  mapViewModel.errors.collectLatest { error ->
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(message = error.toErrorMessage())
-                  }
-                }
-
-                MapPage(
-                  state = mapPageState.mapState,
-                  isLoadingVehicles = isLoadingVehicles,
-                  modifier = Modifier.fillMaxSize(),
-                )
-              }
-              AppPage.LINES -> {
-                LinesPage(
-                  query = linesTextFieldState.text.toString(),
-                  modifier = Modifier.fillMaxSize(),
-                )
-              }
-            }
-          }
+          )
         }
       }
     }
   }
+}
+
+private enum class AppPage {
+  MAP,
+  LINES,
 }
 
 @Composable
