@@ -40,12 +40,12 @@ import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.core.network.di.coreNetworkModule
 import com.trm.warsawtransportmap.feature.lines.LinesTopBar
 import com.trm.warsawtransportmap.feature.lines.featureLinesModule
-import com.trm.warsawtransportmap.feature.map.Map
-import com.trm.warsawtransportmap.feature.map.MapCenterVehiclesBoundingBoxFab
+import com.trm.warsawtransportmap.feature.map.MapView
+import com.trm.warsawtransportmap.feature.map.MapCenterFab
 import com.trm.warsawtransportmap.feature.map.MapTopBar
 import com.trm.warsawtransportmap.feature.map.MapViewModel
 import com.trm.warsawtransportmap.feature.map.featureMapModule
-import com.trm.warsawtransportmap.feature.map.rememberMapPageState
+import com.trm.warsawtransportmap.feature.map.rememberMapViewState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
@@ -90,8 +90,8 @@ fun App() {
       val mapViewModel = koinViewModel<MapViewModel>()
       val vehicles by mapViewModel.vehicles.collectAsStateWithLifecycle()
       val isLoadingVehicles by mapViewModel.isLoadingVehicles.collectAsStateWithLifecycle()
-      val mapPageState =
-        rememberMapPageState(
+      val mapViewState =
+        rememberMapViewState(
           vehicles = vehicles,
           initialCameraPosition =
             mapViewModel.initialCameraPosition
@@ -145,13 +145,13 @@ fun App() {
           },
           snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
           floatingActionButton = {
-            MapCenterVehiclesBoundingBoxFab(
-              onClick = { scope.launch { mapPageState.animateToVehiclesBoundingBox() } }
+            MapCenterFab(
+              onClick = { scope.launch { mapViewState.animateToVehiclesBoundingBoxOrDefault() } }
             )
           },
         ) { paddingValues ->
-          Map(
-            state = mapPageState.mapState,
+          MapView(
+            state = mapViewState.mapState,
             isLoadingVehicles = isLoadingVehicles,
             modifier = Modifier.fillMaxSize().padding(paddingValues),
           )

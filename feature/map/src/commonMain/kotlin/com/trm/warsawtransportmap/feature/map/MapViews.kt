@@ -21,12 +21,12 @@ import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
 import warsawtransportmap.feature.map.generated.resources.Res
-import warsawtransportmap.feature.map.generated.resources.center_map_content_description
 import warsawtransportmap.feature.map.generated.resources.app_name
+import warsawtransportmap.feature.map.generated.resources.center_map_content_description
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 
 @Composable
-fun Map(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Modifier) {
+fun MapView(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Modifier) {
   MaplibreMap(
     modifier = modifier,
     state = state,
@@ -45,7 +45,7 @@ fun Map(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Modifi
 }
 
 @Composable
-fun MapCenterVehiclesBoundingBoxFab(onClick: () -> Unit) {
+fun MapCenterFab(onClick: () -> Unit) {
   FloatingActionButton(onClick = onClick) {
     Icon(
       imageVector = Icons.Default.FilterCenterFocus,

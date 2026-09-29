@@ -45,22 +45,23 @@ import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
 import com.trm.warsawtransportmap.core.model.CameraPosition as SavedCameraPosition
 
-data class MapPageState(
+data class MapViewState(
   val mapState: MapState,
-  private val boundingBox: BoundingBox?,
+  private val vehiclesBoundingBox: BoundingBox?,
 ) {
-  suspend fun animateToVehiclesBoundingBox() {
-    boundingBox?.let { mapState.animateCameraToBounds(it) }
+  suspend fun animateToVehiclesBoundingBoxOrDefault() {
+    vehiclesBoundingBox?.let { mapState.animateCameraToBounds(it) }
+      ?: mapState.animateCamera(defaultInitialCameraPosition().toCameraUpdate())
   }
 }
 
 @Composable
-fun rememberMapPageState(
+fun rememberMapViewState(
   vehicles: List<Vehicle>,
   initialCameraPosition: SavedCameraPosition?,
   onCameraPositionChange: (SavedCameraPosition) -> Unit,
   onVehicleClick: (Vehicle) -> Unit,
-): MapPageState {
+): MapViewState {
   var clickedCluster by remember { mutableStateOf<Feature<Geometry, JsonObject?>?>(null) }
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
   val mapState =
@@ -117,7 +118,7 @@ fun rememberMapPageState(
       }
   }
 
-  return MapPageState(mapState, boundingBox)
+  return MapViewState(mapState, boundingBox)
 }
 
 @Composable
@@ -127,15 +128,7 @@ private fun rememberVehiclesMapState(
   onVehicleClick: (Vehicle) -> Unit,
 ): MapState =
   rememberMapState(
-    initialCameraPosition =
-      CameraPosition(
-        target =
-          Position(
-            latitude = MapConstants.WARSAW_CENTER_LAT,
-            longitude = MapConstants.WARSAW_CENTER_LON,
-          ),
-        zoom = MapConstants.DEFAULT_ZOOM,
-      ),
+    initialCameraPosition = defaultInitialCameraPosition(),
     baseStyle =
       BaseStyle.Uri(
         Res.getUri(if (isSystemInDarkTheme()) "files/dark_style.json" else "files/light_style.json")
@@ -236,3 +229,13 @@ private fun rememberVehiclesMapState(
       iconAllowOverlap = const(true),
     )
   }
+
+private fun defaultInitialCameraPosition(): CameraPosition =
+  CameraPosition(
+    target =
+      Position(
+        latitude = MapConstants.WARSAW_CENTER_LAT,
+        longitude = MapConstants.WARSAW_CENTER_LON,
+      ),
+    zoom = MapConstants.DEFAULT_ZOOM,
+  )
