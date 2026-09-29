@@ -5,7 +5,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.SelectAll
@@ -44,11 +42,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.trm.warsawtransportmap.core.common.extensions.toErrorStringResource
 import com.trm.warsawtransportmap.core.common.model.Loadable
@@ -56,7 +52,6 @@ import com.trm.warsawtransportmap.core.model.Line
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import warsawtransportmap.feature.lines.generated.resources.Res
-import warsawtransportmap.feature.lines.generated.resources.back_content_description
 import warsawtransportmap.feature.lines.generated.resources.clear_content_description
 import warsawtransportmap.feature.lines.generated.resources.deselect_all_content_description
 import warsawtransportmap.feature.lines.generated.resources.retry_button
@@ -64,29 +59,14 @@ import warsawtransportmap.feature.lines.generated.resources.search_lines_placeho
 import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
 
 @Composable
-fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> Unit) {
-  val state = viewModel.state
-  val textFieldState = rememberTextFieldState()
+fun LinesTopBar(textFieldState: TextFieldState) {
+  val viewModel: LinesViewModel = koinViewModel()
 
-  Scaffold(
-    topBar = {
-      LinesSearchTopBar(
-        textFieldState = textFieldState,
-        state = state,
-        onBackClick = onBackClick,
-        onToggleAll = viewModel::toggleAll,
-      )
-    }
-  ) { padding ->
-    LinesContent(
-      state = state,
-      query = textFieldState.text.toString(),
-      modifier =
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(padding),
-      onRetryClick = viewModel::loadLines,
-      onLineClick = viewModel::toggleLine,
-    )
-  }
+  LinesSearchTopBar(
+    textFieldState = textFieldState,
+    state = viewModel.state,
+    onToggleAll = viewModel::toggleAll,
+  )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,7 +74,6 @@ fun LinesScreen(viewModel: LinesViewModel = koinViewModel(), onBackClick: () -> 
 private fun LinesSearchTopBar(
   textFieldState: TextFieldState,
   state: Loadable<LinesState>,
-  onBackClick: () -> Unit,
   onToggleAll: () -> Unit,
 ) {
   val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Collapsed)
@@ -103,8 +82,6 @@ private fun LinesSearchTopBar(
     state = searchBarState,
     inputField = {
       val interactionSource = remember(::MutableInteractionSource)
-      val focusManager = LocalFocusManager.current
-      val focused by interactionSource.collectIsFocusedAsState()
 
       SearchBarDefaults.InputField(
         textFieldState = textFieldState,
@@ -113,14 +90,6 @@ private fun LinesSearchTopBar(
         readOnly = state !is Loadable.Loaded,
         interactionSource = interactionSource,
         placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
-        leadingIcon = {
-          IconButton(onClick = { if (focused) focusManager.clearFocus() else onBackClick() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = stringResource(Res.string.back_content_description),
-            )
-          }
-        },
         trailingIcon = {
           Row(verticalAlignment = Alignment.CenterVertically) {
             AnimatedVisibility(visible = textFieldState.text.isNotEmpty()) {
@@ -149,6 +118,19 @@ private fun LinesSearchTopBar(
       )
     },
     modifier = Modifier.padding(horizontal = 8.dp),
+  )
+}
+
+@Composable
+fun LinesPage(query: String, modifier: Modifier = Modifier) {
+  val viewModel = koinViewModel<LinesViewModel>()
+
+  LinesContent(
+    state = viewModel.state,
+    query = query,
+    modifier = modifier,
+    onRetryClick = viewModel::loadLines,
+    onLineClick = viewModel::toggleLine,
   )
 }
 

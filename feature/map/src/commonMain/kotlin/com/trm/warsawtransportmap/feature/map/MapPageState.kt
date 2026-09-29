@@ -45,7 +45,7 @@ import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
 import com.trm.warsawtransportmap.core.model.CameraPosition as SavedCameraPosition
 
-internal data class MapScreenState(
+data class MapPageState(
   val mapState: MapState,
   private val boundingBox: BoundingBox?,
 ) {
@@ -55,12 +55,12 @@ internal data class MapScreenState(
 }
 
 @Composable
-internal fun rememberMapScreenState(
+fun rememberMapPageState(
   vehicles: List<Vehicle>,
   initialCameraPosition: SavedCameraPosition?,
-  onCameraPositionChange: (CameraPosition) -> Unit,
+  onCameraPositionChange: (SavedCameraPosition) -> Unit,
   onVehicleClick: (Vehicle) -> Unit,
-): MapScreenState {
+): MapPageState {
   var clickedCluster by remember { mutableStateOf<Feature<Geometry, JsonObject?>?>(null) }
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
   val mapState =
@@ -71,7 +71,16 @@ internal fun rememberMapScreenState(
     )
 
   LaunchedEffect(mapState.isCameraMoving) {
-    if (!mapState.isCameraMoving) onCameraPositionChange(mapState.cameraPosition)
+    if (!mapState.isCameraMoving) {
+      val cameraPosition = mapState.cameraPosition
+      onCameraPositionChange(
+        SavedCameraPosition(
+          latitude = cameraPosition.target.latitude,
+          longitude = cameraPosition.target.longitude,
+          zoom = cameraPosition.zoom,
+        )
+      )
+    }
   }
 
   initialCameraPosition?.let {
@@ -108,7 +117,7 @@ internal fun rememberMapScreenState(
       }
   }
 
-  return MapScreenState(mapState, boundingBox)
+  return MapPageState(mapState, boundingBox)
 }
 
 @Composable

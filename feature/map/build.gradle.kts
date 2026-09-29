@@ -46,7 +46,7 @@ kotlin {
 
       implementation(libs.ktor.client.core)
 
-      implementation(libs.maplibre.compose)
+      api(libs.maplibre.compose)
     }
   }
 }

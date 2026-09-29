@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.maplibre.spatialk.geojson.Position
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
@@ -137,6 +138,15 @@ class MapViewModel(
 
   fun onCameraPositionChange(position: MapCameraPosition) {
     viewModelScope.launch { cameraPositionChanges.emit(position) }
+  }
+
+  fun onSavedCameraPositionChange(position: CameraPosition) {
+    onCameraPositionChange(
+      MapCameraPosition(
+        target = Position(latitude = position.latitude, longitude = position.longitude),
+        zoom = position.zoom,
+      )
+    )
   }
 
   private fun startPeriodicFetch() {

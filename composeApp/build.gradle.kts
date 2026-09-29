@@ -36,6 +36,7 @@ kotlin {
       implementation(project(":core:datastore"))
       implementation(project(":core:domain"))
       implementation(project(":core:network"))
+      implementation(project(":core:model"))
       implementation(project(":feature:map"))
       implementation(project(":feature:lines"))
 
@@ -45,14 +46,17 @@ kotlin {
       implementation(libs.compose.components.resources)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
+      implementation(libs.compose.material3.window.size)
+      implementation(libs.compose.materialIconsExtended)
       implementation(libs.compose.runtime)
       implementation(libs.compose.ui)
       implementation(libs.compose.uiToolingPreview)
 
       implementation(libs.koin.core)
       implementation(libs.koin.compose)
+      implementation(libs.koin.compose.viewmodel)
+      implementation(libs.kotlinx.datetime)
 
-      implementation(libs.navigation3.ui)
     }
 
     commonTest.dependencies { implementation(libs.kotlin.test) }
