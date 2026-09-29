@@ -210,11 +210,8 @@ private fun AppBottomBar(
 
 @Composable
 private fun shouldUseNavigationRail(): Boolean {
-  val windowInfo = LocalWindowInfo.current
-  val windowSize =
-    with(LocalDensity.current) {
-      DpSize(windowInfo.containerSize.width.toDp(), windowInfo.containerSize.height.toDp())
-    }
+  val (width, height) = LocalWindowInfo.current.containerSize
+  val windowSize = with(LocalDensity.current) { DpSize(width.toDp(), height.toDp()) }
   @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
   val windowSizeClass = WindowSizeClass.calculateFromSize(windowSize)
   return windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
