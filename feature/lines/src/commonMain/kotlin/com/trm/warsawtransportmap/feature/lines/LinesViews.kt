@@ -45,10 +45,12 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.toErrorStringResource
 import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.model.Line
@@ -66,7 +68,7 @@ fun LinesTopBar(onBackClick: () -> Unit) {
   val textFieldState = rememberTextFieldState()
   val searchBarState = rememberSearchBarState(initialValue = SearchBarValue.Expanded)
   val viewModel = koinViewModel<LinesViewModel>()
-  val state = viewModel.state
+  val state by viewModel.state.collectAsStateWithLifecycle()
 
   LaunchedEffect(searchBarState.targetValue) {
     if (searchBarState.targetValue == SearchBarValue.Collapsed) onBackClick()
@@ -91,7 +93,7 @@ fun LinesTopBar(onBackClick: () -> Unit) {
 
             LinesToggleAllButton(
               isVisible = state is Loadable.Loaded,
-              allSelected = state is Loadable.Loaded && state.data.allSelected,
+              allSelected = (state as? Loadable.Loaded)?.data?.allSelected ?: false,
               onToggleAll = viewModel::toggleAll,
             )
           }
@@ -114,7 +116,7 @@ fun LinesTopBar(onBackClick: () -> Unit) {
       state = state,
       searchText = textFieldState.text.toString(),
       modifier = Modifier.fillMaxSize(),
-      onRetryClick = viewModel::loadLines,
+      onRetryClick = viewModel.state::restart,
       onLineClick = viewModel::toggleLine,
     )
   }

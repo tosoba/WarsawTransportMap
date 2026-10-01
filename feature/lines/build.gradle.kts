@@ -34,6 +34,8 @@ kotlin {
       implementation(libs.compose.runtime)
       implementation(libs.compose.ui)
 
+      implementation(libs.flow.operators)
+
       implementation(libs.koin.compose)
       implementation(libs.koin.compose.viewmodel)
       implementation(libs.koin.core)
