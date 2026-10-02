@@ -4,6 +4,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import org.koin.core.module.Module
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
@@ -16,10 +17,10 @@ import platform.UIKit.UIApplicationWillResignActiveNotification
 import platform.UIKit.UIApplicationWillTerminateNotification
 
 actual fun platformCommonModule(): Module = module {
-  single(AppLifecycle) { AppLifecycleOwner.lifecycle }
+  single(AppLifecycleOwner) { ProcessLifecycleOwner }.bind(LifecycleOwner::class)
 }
 
-private object AppLifecycleOwner : LifecycleOwner {
+private object ProcessLifecycleOwner : LifecycleOwner {
   private val _lifecycle = LifecycleRegistry(this)
   override val lifecycle: Lifecycle = _lifecycle
 

@@ -2,6 +2,7 @@ package com.trm.warsawtransportmap.feature.map
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,9 @@ import com.trm.warsawtransportmap.core.model.CameraPosition
 import com.trm.warsawtransportmap.core.model.Vehicle
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LAT
 import com.trm.warsawtransportmap.feature.map.MapConstants.WARSAW_CENTER_LON
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -30,15 +34,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.maplibre.spatialk.geojson.Position
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModel(
   private val transportRepository: TransportRepository,
   private val preferencesRepository: PreferencesRepository,
-  private val lifecycle: Lifecycle,
+  private val lifecycleOwner: LifecycleOwner,
   private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
   val initialCameraPosition: StateFlow<CameraPosition?> =
@@ -101,7 +102,7 @@ class MapViewModel(
   }
 
   init {
-    lifecycle.addObserver(lifecycleObserver)
+    lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
 
     selectedLines
       .onEach { lines ->
@@ -116,7 +117,7 @@ class MapViewModel(
           if (timeSinceLastFetch > MapAnimatedVehiclePositions.ANIM_DURATION_MS) {
             vehicleAnimator.update(filterVehicles(_allVehicles.value, lines))
           }
-          if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+          if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             startPeriodicFetch()
           }
         }
@@ -210,7 +211,7 @@ class MapViewModel(
     if (lines == null) vehicles else vehicles.filter { lines.contains(it.lineNumber) }
 
   override fun onCleared() {
-    lifecycle.removeObserver(lifecycleObserver)
+    lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
     stopPeriodicFetch()
     vehicleAnimator.clear()
     super.onCleared()

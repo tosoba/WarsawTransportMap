@@ -4,7 +4,7 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-val AppLifecycle = named("AppLifecycle")
+val AppLifecycleOwner = named("AppLifecycle")
 
 expect fun platformCommonModule(): Module
 
