@@ -21,10 +21,8 @@ kotlin {
       implementation(libs.koin.core)
     }
 
-    val androidMain by getting {
-      dependencies {
-        implementation(libs.koin.android)
-      }
+    androidMain.dependencies {
+      implementation(libs.koin.android)
     }
   }
 }
