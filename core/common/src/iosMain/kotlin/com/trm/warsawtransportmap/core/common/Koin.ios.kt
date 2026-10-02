@@ -8,86 +8,58 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSOperationQueue
+import platform.Foundation.NSThread
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationDidBecomeActiveNotification
 import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 import platform.UIKit.UIApplicationState
 import platform.UIKit.UIApplicationWillEnterForegroundNotification
 import platform.UIKit.UIApplicationWillResignActiveNotification
-import platform.UIKit.UIApplicationWillTerminateNotification
 
 actual fun platformCommonModule(): Module = module {
   single(AppLifecycleOwner) { ProcessLifecycleOwner }.bind(LifecycleOwner::class)
 }
 
 private object ProcessLifecycleOwner : LifecycleOwner {
-  private val _lifecycle = LifecycleRegistry(this)
-  override val lifecycle: Lifecycle = _lifecycle
+  override val lifecycle: Lifecycle
+    field = LifecycleRegistry(this)
 
   init {
-    _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    check(NSThread.isMainThread) { "ProcessLifecycleOwner must be created on the main thread" }
 
-    val currentState = UIApplication.sharedApplication.applicationState
-    when (currentState) {
-      UIApplicationState.UIApplicationStateActive -> {
-        _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
-        _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    lifecycle.currentState = Lifecycle.State.CREATED
+    lifecycle.currentState =
+      when (UIApplication.sharedApplication.applicationState) {
+        UIApplicationState.UIApplicationStateActive -> Lifecycle.State.RESUMED
+        UIApplicationState.UIApplicationStateInactive -> Lifecycle.State.STARTED
+        else -> Lifecycle.State.CREATED
       }
-      UIApplicationState.UIApplicationStateInactive -> {
-        _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
-      }
-      else -> {}
-    }
 
-    val center = NSNotificationCenter.defaultCenter
-    val queue = NSOperationQueue.mainQueue
-
-    center.addObserverForName(
-      name = UIApplicationWillEnterForegroundNotification,
-      `object` = null,
-      queue = queue,
-    ) {
-      if (_lifecycle.currentState == Lifecycle.State.CREATED) {
-        _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+    observe(UIApplicationWillEnterForegroundNotification) {
+      if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+        lifecycle.currentState = Lifecycle.State.STARTED
       }
     }
-
-    center.addObserverForName(
-      name = UIApplicationDidBecomeActiveNotification,
-      `object` = null,
-      queue = queue,
-    ) {
-      if (_lifecycle.currentState == Lifecycle.State.CREATED) {
-        _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+    observe(UIApplicationDidBecomeActiveNotification) {
+      lifecycle.currentState = Lifecycle.State.RESUMED
+    }
+    observe(UIApplicationWillResignActiveNotification) {
+      if (lifecycle.currentState == Lifecycle.State.RESUMED) {
+        lifecycle.currentState = Lifecycle.State.STARTED
       }
-      _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
     }
-
-    center.addObserverForName(
-      name = UIApplicationWillResignActiveNotification,
-      `object` = null,
-      queue = queue,
-    ) {
-      _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    observe(UIApplicationDidEnterBackgroundNotification) {
+      lifecycle.currentState = Lifecycle.State.CREATED
     }
+  }
 
-    center.addObserverForName(
-      name = UIApplicationDidEnterBackgroundNotification,
+  private fun observe(name: String?, block: () -> Unit) {
+    NSNotificationCenter.defaultCenter.addObserverForName(
+      name = name,
       `object` = null,
-      queue = queue,
+      queue = NSOperationQueue.mainQueue,
     ) {
-      _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-    }
-
-    center.addObserverForName(
-      name = UIApplicationWillTerminateNotification,
-      `object` = null,
-      queue = queue,
-    ) {
-      if (_lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-        _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-      }
-      _lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+      block()
     }
   }
 }
