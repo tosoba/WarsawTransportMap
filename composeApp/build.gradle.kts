@@ -20,6 +20,7 @@ kotlin {
     iosTarget.binaries.framework {
       baseName = "ComposeApp"
       isStatic = true
+      export(project(":feature:lines"))
     }
   }
 
@@ -38,7 +39,7 @@ kotlin {
       implementation(project(":core:network"))
       implementation(project(":core:model"))
       implementation(project(":feature:map"))
-      implementation(project(":feature:lines"))
+      api(project(":feature:lines"))
 
       implementation(libs.androidx.lifecycle.runtimeCompose)
       implementation(libs.androidx.lifecycle.viewmodelCompose)

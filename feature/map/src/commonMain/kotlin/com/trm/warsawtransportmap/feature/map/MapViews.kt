@@ -14,19 +14,27 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TwoRowsTopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.UiComposable
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.overlay.MapOverlayScope
 import warsawtransportmap.feature.map.generated.resources.Res
 import warsawtransportmap.feature.map.generated.resources.app_name
 import warsawtransportmap.feature.map.generated.resources.center_map_content_description
 import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 
 @Composable
-fun MapView(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Modifier) {
+fun MapView(
+  state: MapState,
+  modifier: Modifier = Modifier,
+  overlay: @Composable @UiComposable MapOverlayScope.() -> Unit,
+) {
   MaplibreMap(
     modifier = modifier,
     state = state,
@@ -37,16 +45,22 @@ fun MapView(state: MapState, isLoadingVehicles: Boolean, modifier: Modifier = Mo
           tilt { enabled = false }
         }
       },
-  ) {
-    AnimatedVisibility(visible = isLoadingVehicles, enter = fadeIn(), exit = fadeOut()) {
-      LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-    }
+    overlay = overlay,
+  )
+}
+
+@Composable
+fun MapViewVehiclesLoadingIndicator(isLoading: Boolean, modifier: Modifier = Modifier) {
+  AnimatedVisibility(visible = isLoading, enter = fadeIn(), exit = fadeOut(), modifier = modifier) {
+    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
   }
 }
 
 @Composable
-fun MapCenterFab(onClick: () -> Unit) {
-  FloatingActionButton(onClick = onClick) {
+fun MapCenterFab(modifier: Modifier = Modifier, onClick: suspend () -> Unit) {
+  val scope = rememberCoroutineScope()
+
+  FloatingActionButton(onClick = { scope.launch { onClick() } }, modifier = modifier) {
     Icon(
       imageVector = Icons.Default.FilterCenterFocus,
       contentDescription = stringResource(Res.string.center_map_content_description),

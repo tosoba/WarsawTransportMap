@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.trm.warsawtransportmap.core.common.extensions.MapCameraAnimateToBoundingBoxEffect
 import com.trm.warsawtransportmap.core.common.extensions.rememberMapVehiclesBoundingBox
+import com.trm.warsawtransportmap.core.model.CameraPosition as SavedCameraPosition
 import com.trm.warsawtransportmap.core.model.Vehicle
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -43,9 +44,8 @@ import org.maplibre.spatialk.geojson.Geometry
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import warsawtransportmap.feature.map.generated.resources.Res
-import com.trm.warsawtransportmap.core.model.CameraPosition as SavedCameraPosition
 
-data class MapViewState(
+data class MapVehiclesState(
   val mapState: MapState,
   private val vehiclesBoundingBox: BoundingBox?,
 ) {
@@ -56,12 +56,12 @@ data class MapViewState(
 }
 
 @Composable
-fun rememberMapViewState(
+fun rememberMapVehiclesState(
   vehicles: List<Vehicle>,
   initialCameraPosition: SavedCameraPosition?,
   onCameraPositionChange: (SavedCameraPosition) -> Unit,
   onVehicleClick: (Vehicle) -> Unit,
-): MapViewState {
+): MapVehiclesState {
   var clickedCluster by remember { mutableStateOf<Feature<Geometry, JsonObject?>?>(null) }
   val boundingBox = rememberMapVehiclesBoundingBox(vehicles = vehicles, percentageIncrease = 0.1)
   val mapState =
@@ -118,7 +118,7 @@ fun rememberMapViewState(
       }
   }
 
-  return MapViewState(mapState, boundingBox)
+  return MapVehiclesState(mapState, boundingBox)
 }
 
 @Composable

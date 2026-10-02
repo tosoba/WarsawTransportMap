@@ -155,10 +155,11 @@ private fun RowScope.LinesToggleAllButton(
 }
 
 @Composable
-private fun LinesContent(
+internal fun LinesContent(
   state: Loadable<LinesState>,
   searchText: String,
   modifier: Modifier = Modifier,
+  paddingValues: PaddingValues = PaddingValues.Zero,
   onRetryClick: () -> Unit,
   onLineClick: (String) -> Unit,
 ) {
@@ -184,6 +185,7 @@ private fun LinesContent(
               }
             },
           selectedLines = loadableState.data.selectedLines,
+          paddingValues = paddingValues,
           onLineClick = onLineClick,
         )
       }
@@ -209,6 +211,7 @@ private fun LinesContent(
 private fun LinesGrid(
   lines: Map<String, List<Line>>,
   selectedLines: Set<String>,
+  paddingValues: PaddingValues,
   onLineClick: (String) -> Unit,
 ) {
   LazyVerticalGrid(
@@ -218,6 +221,15 @@ private fun LinesGrid(
     verticalArrangement = Arrangement.spacedBy(16.dp),
     modifier = Modifier.fillMaxSize(),
   ) {
+    paddingValues
+      .calculateTopPadding()
+      .takeIf { it > 0.dp }
+      ?.let {
+        item(span = { GridItemSpan(maxLineSpan) }, key = "top-padding") {
+          Spacer(modifier = Modifier.height(it))
+        }
+      }
+
     lines.forEach { (header, lines) ->
       item(span = { GridItemSpan(maxLineSpan) }, key = "header_$header") { LineGroupHeader(header) }
 
@@ -229,6 +241,15 @@ private fun LinesGrid(
         )
       }
     }
+
+    paddingValues
+      .calculateBottomPadding()
+      .takeIf { it > 0.dp }
+      ?.let {
+        item(span = { GridItemSpan(maxLineSpan) }, key = "bottom-padding") {
+          Spacer(modifier = Modifier.height(it))
+        }
+      }
   }
 }
 
