@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WarsawTransportMap</string>
+    <string name="center_map_content_description">Center the map to show all vehicles</string>
+    <string name="filter_lines_content_description">Filter lines</string>
+    <string name="select_lines">Select lines</string>
+    <string name="vehicle_updated_now">Updated just now.</string>
+</resources>

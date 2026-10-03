@@ -54,14 +54,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.toErrorStringResource
 import com.trm.warsawtransportmap.core.common.model.Loadable
 import com.trm.warsawtransportmap.core.model.Line
-import org.jetbrains.compose.resources.stringResource
+import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import warsawtransportmap.feature.lines.generated.resources.Res
-import warsawtransportmap.feature.lines.generated.resources.clear_content_description
-import warsawtransportmap.feature.lines.generated.resources.deselect_all_content_description
-import warsawtransportmap.feature.lines.generated.resources.retry_button
-import warsawtransportmap.feature.lines.generated.resources.search_lines_placeholder
-import warsawtransportmap.feature.lines.generated.resources.select_all_content_description
 
 @Composable
 fun LinesTopBar(onBackClick: () -> Unit) {
@@ -86,7 +80,9 @@ fun LinesTopBar(onBackClick: () -> Unit) {
             Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
           }
         },
-        placeholder = { Text(text = stringResource(Res.string.search_lines_placeholder)) },
+        placeholder = {
+          Text(text = stringResource(FeatureLinesMR.strings.search_lines_placeholder))
+        },
         trailingIcon = {
           Row(verticalAlignment = Alignment.CenterVertically) {
             LinesClearSearchTextButton(textFieldState)
@@ -128,7 +124,7 @@ private fun RowScope.LinesClearSearchTextButton(textFieldState: TextFieldState) 
     IconButton(onClick = textFieldState::clearText) {
       Icon(
         imageVector = Icons.Default.Close,
-        contentDescription = stringResource(Res.string.clear_content_description),
+        contentDescription = stringResource(FeatureLinesMR.strings.clear_content_description),
       )
     }
   }
@@ -146,8 +142,8 @@ private fun RowScope.LinesToggleAllButton(
         imageVector = if (allSelected) Icons.Default.Deselect else Icons.Default.SelectAll,
         contentDescription =
           stringResource(
-            if (allSelected) Res.string.deselect_all_content_description
-            else Res.string.select_all_content_description
+            if (allSelected) FeatureLinesMR.strings.deselect_all_content_description
+            else FeatureLinesMR.strings.select_all_content_description
           ),
       )
     }
@@ -198,7 +194,7 @@ internal fun LinesContent(
             )
 
             Button(onClick = onRetryClick, modifier = Modifier.padding(top = 16.dp)) {
-              Text(text = stringResource(Res.string.retry_button))
+              Text(text = stringResource(FeatureLinesMR.strings.retry_button))
             }
           }
         }

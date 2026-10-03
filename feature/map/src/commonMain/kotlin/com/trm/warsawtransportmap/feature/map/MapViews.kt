@@ -17,17 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.UiComposable
+import dev.icerock.moko.resources.compose.pluralStringResource
+import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.pluralStringResource
-import org.jetbrains.compose.resources.stringResource
 import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.overlay.MapOverlayScope
-import warsawtransportmap.feature.map.generated.resources.Res
-import warsawtransportmap.feature.map.generated.resources.app_name
-import warsawtransportmap.feature.map.generated.resources.center_map_content_description
-import warsawtransportmap.feature.map.generated.resources.tracking_vehicles
 
 @Composable
 fun MapView(
@@ -63,7 +59,7 @@ fun MapCenterFab(modifier: Modifier = Modifier, onClick: suspend () -> Unit) {
   FloatingActionButton(onClick = { scope.launch { onClick() } }, modifier = modifier) {
     Icon(
       imageVector = Icons.Default.FilterCenterFocus,
-      contentDescription = stringResource(Res.string.center_map_content_description),
+      contentDescription = stringResource(FeatureMapMR.strings.center_map_content_description),
     )
   }
 }
@@ -71,9 +67,12 @@ fun MapCenterFab(modifier: Modifier = Modifier, onClick: suspend () -> Unit) {
 @Composable
 fun MapTopBar(vehiclesCount: Int) {
   TwoRowsTopAppBar(
-    title = { Text(text = stringResource(Res.string.app_name)) },
+    title = { Text(text = stringResource(FeatureMapMR.strings.app_name)) },
     subtitle = {
-      Text(text = pluralStringResource(Res.plurals.tracking_vehicles, vehiclesCount, vehiclesCount))
+      Text(
+        text =
+          pluralStringResource(FeatureMapMR.plurals.tracking_vehicles, vehiclesCount, vehiclesCount)
+      )
     },
     collapsedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
     expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,

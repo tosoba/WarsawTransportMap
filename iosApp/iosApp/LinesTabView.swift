@@ -14,7 +14,7 @@ struct LinesTabView: View {
                 stateBridge: stateBridge,
                 selectionState: $selectionState
             )
-            .navigationTitle("Lines")
+            .navigationTitle(String(\AppStrings.lines_navigation_label))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -24,7 +24,7 @@ struct LinesTabView: View {
             .searchable(
                 text: $searchText,
                 placement: .navigationBarDrawer(displayMode: .always),
-                prompt: "Search lines"
+                prompt: String(\LinesStrings.search_lines_placeholder)
             )
             .toolbarBackground(.thickMaterial, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -33,7 +33,7 @@ struct LinesTabView: View {
             .ignoresSafeArea()
         }
         .tabItem {
-            Label("Lines", systemImage: "square.grid.2x2")
+            Label(String(\AppStrings.lines_navigation_label), systemImage: "square.grid.2x2")
         }
     }
 
@@ -48,7 +48,9 @@ struct LinesTabView: View {
             )
         }
         .accessibilityLabel(
-            selectionState == true ? "Deselect all lines" : "Select all lines"
+            selectionState == true
+                ? String(\LinesStrings.deselect_all_content_description)
+                : String(\LinesStrings.select_all_content_description)
         )
         .disabled(selectionState == nil)
     }

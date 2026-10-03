@@ -15,7 +15,7 @@ struct MapTabView: View {
                 .ignoresSafeArea()
         }
         .tabItem {
-            Label("Map", systemImage: "map")
+            Label(String(\AppStrings.map_navigation_label), systemImage: "map")
         }
     }
 }
@@ -25,9 +25,11 @@ private extension MapTabView {
     var mapContent: some View {
         if #available(iOS 26.0, *) {
             mapHost
-                .navigationTitle("WarsawTransportMap")
+                .navigationTitle(String(\MapStrings.app_name))
                 .navigationBarTitleDisplayMode(.inline)
-                .navigationSubtitle("Tracking \(vehicleCount) vehicles")
+                .navigationSubtitle(
+                    String(plural: \MapPlurals.tracking_vehicles, count: vehicleCount)
+                )
         } else {
             mapHost
                 .navigationTitle("")
@@ -35,9 +37,9 @@ private extension MapTabView {
                 .toolbar {
                     ToolbarItem(placement: .principal) {
                         VStack(spacing: 0) {
-                            Text("WarsawTransportMap")
+                            Text(String(\MapStrings.app_name))
                                 .font(.headline)
-                            Text("Tracking \(vehicleCount) vehicles")
+                            Text(String(plural: \MapPlurals.tracking_vehicles, count: vehicleCount))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

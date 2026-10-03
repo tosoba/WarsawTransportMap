@@ -3,6 +3,7 @@ plugins {
   alias(libs.plugins.androidKotlinMultiplatformLibrary)
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
+  alias(libs.plugins.mokoResources)
 }
 
 kotlin {
@@ -33,8 +34,15 @@ kotlin {
       implementation(libs.ktor.client.core)
 
       implementation(libs.maplibre.compose)
+
+      api(libs.moko.resources)
+      api(libs.moko.resources.compose)
     }
   }
 }
 
-compose.resources { publicResClass = true }
+multiplatformResources {
+  resourcesPackage.set("com.trm.warsawtransportmap.core.common")
+  resourcesClassName.set("CoreCommonMR")
+  resourcesVisibility.set(dev.icerock.gradle.MRVisibility.Public)
+}

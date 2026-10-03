@@ -33,13 +33,13 @@ import com.trm.warsawtransportmap.feature.lines.LinesTopBar
 import com.trm.warsawtransportmap.feature.map.MapCenterFab
 import com.trm.warsawtransportmap.feature.map.MapScreenContent
 import com.trm.warsawtransportmap.feature.map.MapTopBar
+import com.trm.warsawtransportmap.composeapp.ComposeAppMR
+import com.trm.warsawtransportmap.composeapp.lines_navigation_label
+import com.trm.warsawtransportmap.composeapp.map_navigation_label
 import com.trm.warsawtransportmap.feature.map.rememberMapScreenState
-import org.jetbrains.compose.resources.stringResource
+import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.KoinApplication
 import org.koin.dsl.KoinConfiguration
-import warsawtransportmap.composeapp.generated.resources.Res
-import warsawtransportmap.composeapp.generated.resources.lines_navigation_label
-import warsawtransportmap.composeapp.generated.resources.map_navigation_label
 
 @Composable
 fun App() {
@@ -111,13 +111,13 @@ private fun AppNavigationRail(
       selected = currentPage == AppPage.MAP,
       onClick = { onPageSelected(AppPage.MAP) },
       icon = { Icon(imageVector = Icons.Default.Map, contentDescription = null) },
-      label = { Text(text = stringResource(Res.string.map_navigation_label)) },
+      label = { Text(text = stringResource(ComposeAppMR.strings.map_navigation_label)) },
     )
     NavigationRailItem(
       selected = currentPage == AppPage.LINES,
       onClick = { onPageSelected(AppPage.LINES) },
       icon = { Icon(imageVector = Icons.Default.GridView, contentDescription = null) },
-      label = { Text(text = stringResource(Res.string.lines_navigation_label)) },
+      label = { Text(text = stringResource(ComposeAppMR.strings.lines_navigation_label)) },
     )
   }
 }
@@ -132,13 +132,13 @@ private fun AppBottomBar(
       selected = currentPage == AppPage.MAP,
       onClick = { onPageSelected(AppPage.MAP) },
       icon = { Icon(imageVector = Icons.Default.Map, contentDescription = null) },
-      label = { Text(text = stringResource(Res.string.map_navigation_label)) },
+      label = { Text(text = stringResource(ComposeAppMR.strings.map_navigation_label)) },
     )
     ShortNavigationBarItem(
       selected = currentPage == AppPage.LINES,
       onClick = { onPageSelected(AppPage.LINES) },
       icon = { Icon(imageVector = Icons.Default.GridView, contentDescription = null) },
-      label = { Text(text = stringResource(Res.string.lines_navigation_label)) },
+      label = { Text(text = stringResource(ComposeAppMR.strings.lines_navigation_label)) },
     )
   }
 }

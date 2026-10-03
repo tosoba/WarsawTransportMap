@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plural name="tracking_vehicles">
+        <item quantity="one">Tracking %d vehicle.</item>
+        <item quantity="other">Tracking %d vehicles.</item>
+    </plural>
+    <plural name="vehicle_updated_minutes_ago">
+        <item quantity="one">Updated %d minute ago</item>
+        <item quantity="other">Updated %d minutes ago</item>
+    </plural>
+    <plural name="vehicle_updated_seconds_ago">
+        <item quantity="one">Updated %d second ago</item>
+        <item quantity="other">Updated %d seconds ago</item>
+    </plural>
+</resources>

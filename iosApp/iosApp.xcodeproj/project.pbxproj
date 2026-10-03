@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4B3983088BB7868804B952F2 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+		4B3983088BB7868804B952F2 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,13 +24,21 @@
 		9EA068140461C980979ADF65 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				4B3983088BB7868804B952F2 /* Exceptions for "iosApp" folder in "iosApp" target */,
+				4B3983088BB7868804B952F2 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
 			path = iosApp;
 			sourceTree = "<group>";
 		};
 		AA0C2441796B7D63AA036EFD /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = Configuration;
 			sourceTree = "<group>";
 		};
@@ -72,6 +80,7 @@
 			buildConfigurationList = 451CB3F31E1627587CEEB152 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
 				C3CBD180ABE71234D3C0FE8C /* Compile Kotlin Framework */,
+				8E4C21A907D5B6F4A1C09E11 /* Copy MOKO Resources */,
 				1FA6CB825034649C3927D095 /* Sources */,
 				DA819B8FC6F16CE95DC65B10 /* Frameworks */,
 				4FE10013612610A0C9250AC5 /* Resources */,
@@ -154,6 +163,26 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
 		};
+		8E4C21A907D5B6F4A1C09E11 /* Copy MOKO Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy MOKO Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\nif [[ \"$SDK_NAME\" == iphonesimulator* ]]; then\n  MOKO_TARGET=IosSimulatorArm64\nelse\n  MOKO_TARGET=IosArm64\nfi\n./gradlew \":composeApp:copyResources${CONFIGURATION}Framework${MOKO_TARGET}\" -Pmoko.resources.BUILT_PRODUCTS_DIR=\"$BUILT_PRODUCTS_DIR\" -Pmoko.resources.CONTENTS_FOLDER_PATH=\"$CONTENTS_FOLDER_PATH\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */

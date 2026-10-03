@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
   alias(libs.plugins.kotlinSerialization)
+  alias(libs.plugins.mokoResources)
 }
 
 kotlin {
@@ -20,7 +21,11 @@ kotlin {
     iosTarget.binaries.framework {
       baseName = "ComposeApp"
       isStatic = true
+
+      export(project(":core:common"))
+      export(project(":feature:map"))
       export(project(":feature:lines"))
+      export(libs.moko.resources)
     }
   }
 
@@ -32,14 +37,17 @@ kotlin {
     }
 
     commonMain.dependencies {
-      implementation(project(":core:common"))
+      api(project(":core:common"))
       implementation(project(":core:data"))
       implementation(project(":core:datastore"))
       implementation(project(":core:domain"))
       implementation(project(":core:network"))
       implementation(project(":core:model"))
-      implementation(project(":feature:map"))
+      api(project(":feature:map"))
       api(project(":feature:lines"))
+
+      api(libs.moko.resources)
+      api(libs.moko.resources.compose)
 
       implementation(libs.androidx.lifecycle.runtimeCompose)
       implementation(libs.androidx.lifecycle.viewmodelCompose)
@@ -57,9 +65,14 @@ kotlin {
       implementation(libs.koin.compose)
       implementation(libs.koin.compose.viewmodel)
       implementation(libs.kotlinx.datetime)
-
     }
 
     commonTest.dependencies { implementation(libs.kotlin.test) }
   }
+}
+
+multiplatformResources {
+  resourcesPackage.set("com.trm.warsawtransportmap.composeapp")
+  resourcesClassName.set("ComposeAppMR")
+  resourcesVisibility.set(dev.icerock.gradle.MRVisibility.Public)
 }
