@@ -10,7 +10,7 @@
 **WarsawTransportMap** is a **Compose Multiplatform** app for **tracking live positions of public transport vehicles** in Warsaw which utilizes [UM](https://api.um.warszawa.pl/) API.
 
 ## Features
-- **Shared UI** in Jetpack Compose
+- **Shared UI** in Jetpack Compose embedded in a SwiftUI host on iOS
 - **Live map updates** showing current vehicles' positions
 - **Line selection** list
 - **Dynamic** light/dark **themes**
