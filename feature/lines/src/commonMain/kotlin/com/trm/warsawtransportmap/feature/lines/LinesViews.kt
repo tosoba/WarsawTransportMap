@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.trm.warsawtransportmap.core.common.extensions.toErrorStringResource
@@ -238,6 +239,12 @@ private fun LinesGrid(
       }
     }
 
+    if (lines.isEmpty()) {
+      item(span = { GridItemSpan(maxLineSpan) }, key = "empty-lines") {
+        LinesEmptyText()
+      }
+    }
+
     paddingValues
       .calculateBottomPadding()
       .takeIf { it > 0.dp }
@@ -247,6 +254,17 @@ private fun LinesGrid(
         }
       }
   }
+}
+
+@Composable
+private fun LazyGridItemScope.LinesEmptyText() {
+  Text(
+    text = stringResource(FeatureLinesMR.strings.no_lines_match_filter),
+    style = MaterialTheme.typography.headlineSmallEmphasized,
+    color = MaterialTheme.colorScheme.onBackground,
+    textAlign = TextAlign.Center,
+    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).animateItem(),
+  )
 }
 
 @Composable
