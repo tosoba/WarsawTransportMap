@@ -55,8 +55,19 @@ jobs:
           -derivedDataPath ./build \
           -verbose
 
+      # The KMP resource bundles inside ComposeApp.framework contain colons in
+      # their names (e.g. WarsawTransportMap.core:common.bundle), which
+      # actions/upload-artifact rejects as invalid characters. Archive the build
+      # products first so the artifact only contains a single file with a valid
+      # name; ditto also preserves symlinks and executable permissions.
+      - name: Package iOS simulator app
+        run: |
+          cd build/Build/Products
+          ditto -c -k --keepParent Debug-iphonesimulator "$GITHUB_WORKSPACE/iphonesimulator-app.zip"
+
       - name: Upload App Folder
         uses: actions/upload-artifact@v7
         with:
           name: iphonesimulator-app
-          path: build/Build/Products/Debug-iphonesimulator/*
+          path: iphonesimulator-app.zip
+          if-no-files-found: error
