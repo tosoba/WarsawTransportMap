@@ -23,12 +23,14 @@ class LinesViewModel(
     emit(Loadable.Loading)
 
     val lines = transportRepository.getLines()
+    val numbers = lines.map(Line::number).toSet()
     emit(
       Loadable.Loaded(
         LinesState(
           lines = lines.grouped(),
           selectedLines =
-            preferencesRepository.selectedLines.firstOrNull() ?: lines.map(Line::number).toSet(),
+            preferencesRepository.selectedLines.firstOrNull()?.filter { it in numbers }?.toSet()
+              ?: numbers,
         )
       )
     )
