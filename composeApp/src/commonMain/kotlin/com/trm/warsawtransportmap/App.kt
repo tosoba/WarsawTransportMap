@@ -24,18 +24,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.DpSize
+import com.trm.warsawtransportmap.composeapp.ComposeAppMR
+import com.trm.warsawtransportmap.composeapp.lines_navigation_label
+import com.trm.warsawtransportmap.composeapp.map_navigation_label
 import com.trm.warsawtransportmap.feature.lines.LinesTopBar
 import com.trm.warsawtransportmap.feature.map.MapCenterFab
 import com.trm.warsawtransportmap.feature.map.MapScreenContent
 import com.trm.warsawtransportmap.feature.map.MapTopBar
-import com.trm.warsawtransportmap.composeapp.ComposeAppMR
-import com.trm.warsawtransportmap.composeapp.lines_navigation_label
-import com.trm.warsawtransportmap.composeapp.map_navigation_label
 import com.trm.warsawtransportmap.feature.map.rememberMapScreenState
 import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.KoinApplication
@@ -46,7 +47,7 @@ fun App() {
   KoinApplication(configuration = KoinConfiguration { modules(appModules) }) {
     AppTheme {
       val snackbarHostState = remember(::SnackbarHostState)
-      var selectedPage by remember { mutableStateOf(AppPage.MAP) }
+      var selectedPage by rememberSaveable { mutableStateOf(AppPage.MAP) }
       val useNavigationRail = shouldUseNavigationRail()
       val onPageSelected: (AppPage) -> Unit = { selectedPage = it }
 
