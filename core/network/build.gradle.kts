@@ -15,7 +15,7 @@ val localProperties =
     }
   }
 
-val umApiKey = 
+val umApiKey =
   project.findProperty("UM_API_KEY")?.toString()
     ?: System.getenv("UM_API_KEY")
     ?: localProperties.getProperty("UM_API_KEY").orEmpty()

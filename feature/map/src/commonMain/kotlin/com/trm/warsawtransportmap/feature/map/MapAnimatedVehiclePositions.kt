@@ -2,6 +2,9 @@ package com.trm.warsawtransportmap.feature.map
 
 import com.trm.warsawtransportmap.core.common.extensions.calculateDistanceBetweenKm
 import com.trm.warsawtransportmap.core.model.Vehicle
+import kotlin.concurrent.Volatile
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,9 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.concurrent.Volatile
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.milliseconds
 
 internal class MapAnimatedVehiclePositions(private val scope: CoroutineScope) {
   private data class VehicleAnimation(
